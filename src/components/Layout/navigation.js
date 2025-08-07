@@ -15,7 +15,7 @@ export default function Navigation({ children }) {
         />
         <div className="drawer-content flex flex-col">
           {/* Navbar */}
-          <div className="navbar bg-transparent w-full absolute top-0 left-0 z-50">
+          <div className="navbar bg-black/30 w-full absolute top-0 left-0 z-50">
             <div className="flex-none lg:hidden">
               <label
                 htmlFor="my-drawer-3"
