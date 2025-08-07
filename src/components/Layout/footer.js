@@ -14,7 +14,7 @@ export default function Footer() {
         </div>
       </nav>
       <nav>
-        <h6 className="footer-title">Social</h6>
+        <h6 className="footer-title">Follow Us</h6>
         <div className="grid grid-flow-col gap-4">
           <a>
             <svg
