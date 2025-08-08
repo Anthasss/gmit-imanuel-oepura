@@ -55,7 +55,7 @@ export default function Navigation({ children }) {
           {/* Page content here */}
           <main>{children}</main>
         </div>
-        <div className="drawer-side">
+        <div className="drawer-side z-[60]">
           <label
             htmlFor="my-drawer-3"
             aria-label="close sidebar"
