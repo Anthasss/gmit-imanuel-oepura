@@ -1,3 +1,6 @@
+import WeeklySummary from "@/components/home/weeklySummary";
+import JoinUs from "@/components/home/joinUs";
+
 export default function Home() {
   return (
     <div>
@@ -15,6 +18,10 @@ export default function Home() {
         </div>
       </div>
 
+      <div>
+        <JoinUs />
+        <WeeklySummary />
+      </div>
     </div>
   );
 }
