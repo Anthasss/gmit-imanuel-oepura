@@ -1,3 +1,5 @@
+import { Menu } from "lucide-react"; 
+
 export default function Navigation({ children }) {
   const menuItems = [
     { name: "Home", path: "/" },
@@ -22,19 +24,7 @@ export default function Navigation({ children }) {
                 aria-label="open sidebar"
                 className="btn btn-square btn-ghost"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  className="inline-block h-6 w-6 stroke-current"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  ></path>
-                </svg>
+                <Menu className="w-8 h-8" />
               </label>
             </div>
             <div className="mx-2 flex-1 px-2">
@@ -49,6 +39,21 @@ export default function Navigation({ children }) {
                     <a href={item.path}>{item.name}</a>
                   </li>
                 ))}
+
+                {/* upp menus */}
+                <li>
+                  <details>
+                    <summary>UPP</summary>
+                    <ul className="bg-base-100 rounded-t-none p-2 dropdown-content right-0">
+                      <li>
+                        <a href="/upp/anak">Anak</a>
+                      </li>
+                      <li>
+                        <a href="/upp/pemuda">Pemuda</a>
+                      </li>
+                    </ul>
+                  </details>
+                </li>
               </ul>
             </div>
           </div>
@@ -72,6 +77,17 @@ export default function Navigation({ children }) {
                 <a href={item.path}>{item.name}</a>
               </li>
             ))}
+
+            {/* upp menus */}
+            <h2>UPP</h2>
+            <ul>
+              <li>
+                <a href="/upp/anak">Anak</a>
+              </li>
+              <li>
+                <a href="/upp/pemuda">Pemuda</a>
+              </li>
+            </ul>
           </ul>
         </div>
       </div>
