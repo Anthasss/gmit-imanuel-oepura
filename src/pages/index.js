@@ -3,7 +3,7 @@ import JoinUs from "@/components/home/joinUs";
 
 export default function Home() {
   return (
-    <div>
+    <div className="bg-gray-100">
       <div className="flex justify-start items-center h-screen">
         <img
           src="/header/home.jpg"
@@ -18,7 +18,7 @@ export default function Home() {
         </div>
       </div>
 
-      <div>
+      <div className="p-8 min-h-screen flex flex-col gap-4">
         <JoinUs />
         <WeeklySummary />
       </div>
