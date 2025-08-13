@@ -1,6 +1,7 @@
 import WeeklySummary from "@/components/home/weeklySummary";
 import JoinUs from "@/components/home/joinUs";
 import ScheduleRow from "@/components/home/scheduleRow";
+import OurLocation from "@/components/home/ourLocation";
 
 const schedules = [
 	{
@@ -34,6 +35,7 @@ const schedules = [
 		time: "9:00 AM",
 		location: "Training Room",
 		speaker: "Sarah Wilson",
+
 	},
 	{
 		id: 5,
@@ -69,7 +71,6 @@ export default function Home() {
 				<JoinUs />
 				<WeeklySummary />
 			</div>
-
 			{/* schedule */}
 			<div className="relative min-h-fit">
 				<img
@@ -84,7 +85,9 @@ export default function Home() {
 				</div>
 			</div>
 
-			{/* <ImageSlider /> */}
+      <div className="w-full p-8">
+        <OurLocation />
+      </div>
 		</div>
 	);
 }
