@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import UppCardContainer from "@/components/upp/uppCardContainer"
 
-export default function uppCategory(){
+export default function UppCategory(){
   const router = useRouter()
   const { category } = router.query
   return (

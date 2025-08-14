@@ -1,4 +1,5 @@
 import { Menu } from "lucide-react"; 
+import Link from "next/link";
 
 export default function Navigation({ children }) {
   const menuItems = [
@@ -46,10 +47,10 @@ export default function Navigation({ children }) {
                     <summary>UPP</summary>
                     <ul className="bg-base-100 rounded-t-none p-2 dropdown-content right-0">
                       <li>
-                        <a href="/upp/anak">Anak</a>
+                        <Link href="/upp/anak">Anak</Link>
                       </li>
                       <li>
-                        <a href="/upp/pemuda">Pemuda</a>
+                        <Link href="/upp/pemuda">Pemuda</Link>
                       </li>
                     </ul>
                   </details>

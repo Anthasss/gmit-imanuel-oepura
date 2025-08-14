@@ -7,7 +7,7 @@ export default function JoinUs() {
       {/* texts */}
       <div className="flex flex-col justify-center text-gray-800 flex-1">
         <h2 className="text-4xl font-bold mb-2 tracking-wide font-sans">Join Us</h2>
-        <p className="text-xl font-medium mb-4 text-gray-700">Together in love & God's word</p>
+        <p className="text-xl font-medium mb-4 text-gray-700">Together in love & God&apos;s word</p>
         <div className="mb-6">
           <div className="flex items-center text-gray-600 mb-2">
             <Clock className="h-5 w-5 mr-2" />
