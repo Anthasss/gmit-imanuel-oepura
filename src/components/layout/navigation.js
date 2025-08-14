@@ -83,10 +83,10 @@ export default function Navigation({ children }) {
             <h2>UPP</h2>
             <ul>
               <li>
-                <a href="/upp/anak">Anak</a>
+                <Link href="/upp/anak">Anak</Link>
               </li>
               <li>
-                <a href="/upp/pemuda">Pemuda</a>
+                <Link href="/upp/pemuda">Pemuda</Link>
               </li>
             </ul>
           </ul>
