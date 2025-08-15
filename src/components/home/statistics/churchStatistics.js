@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import StatPieChart from "./statPieChart";
-import { chartData } from "../../json/dummyHome";
+import StatPieChart from "../statPieChart";
+import { chartData } from "../../../json/dummyHome";
 
 export default function ChurchStatistics() {
   const [currentIndex, setCurrentIndex] = useState(0);

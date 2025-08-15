@@ -3,7 +3,7 @@ import { Clock, MapPin } from 'lucide-react';
 
 export default function JoinUs() {
   return (
-    <div className="flex flex-col md:flex-row bg-gray-300 md:rounded-3xl p-6 md:p-8 shadow-lg w-full md:w-4/5 mx-auto gap-6 md:gap-12">
+    <div className="flex flex-col md:flex-row md:bg-gray-300 md:rounded-3xl p-6 md:p-8 md:shadow-lg w-full md:w-4/5 mx-auto gap-6 md:gap-12">
       {/* texts */}
       <div className="flex flex-col justify-center text-gray-800 flex-1">
         <h2 className="divider divider-start divider-neutral text-4xl font-bold mb-4 tracking-wide font-sans">Join Us</h2>

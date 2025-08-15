@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export default function WeeklySummary() {
   return (
-    <div className="flex flex-col md:flex-row bg-gray-300 md:rounded-3xl p-6 md:p-8 shadow-lg w-full md:w-4/5 mx-auto gap-6 md:gap-12">
+    <div className="flex flex-col md:flex-row md:bg-gray-300 md:rounded-3xl p-6 md:p-8 shadow-lg w-full md:w-4/5 mx-auto gap-6 md:gap-12">
       {/* image */}
       <div className="flex-shrink-0 rounded-xl overflow-hidden md:w-96 md:h-96 relative flex-1">
         <Image

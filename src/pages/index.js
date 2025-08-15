@@ -1,10 +1,11 @@
-import WeeklySummary from "@/components/home/weeklySummary";
-import JoinUs from "@/components/home/joinUs";
-import ScheduleRow from "@/components/home/scheduleRow";
+import WeeklySummary from "@/components/home/cta/weeklySummary";
+import JoinUs from "@/components/home/cta/joinUs";
+import ScheduleRow from "@/components/home/schedule/scheduleRow";
 import OurLocation from "@/components/home/ourLocation";
-import ChurchStatistics from "@/components/home/churchStatistics";
+import ChurchStatistics from "@/components/home/statistics/churchStatistics";
 
 import { ctaTexts, schedules } from "@/json/dummyHome";
+import ChurchStatisticsHorizontal from "@/components/home/statistics/churchStatisticsHorizontal";
 
 export default function Home() {
   return (
@@ -31,6 +32,9 @@ export default function Home() {
             </p>
           </div>
         </div>
+
+        {/* horizontal statistics */}
+        <ChurchStatisticsHorizontal />
 
         {/* cta */}
         <div className="md:p-8 min-h-screen flex flex-col md:gap-4">
