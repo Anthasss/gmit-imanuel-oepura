@@ -11,7 +11,7 @@ export default function ChurchStatistics() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % totalPairs);
-    }, 4000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [totalPairs]);
@@ -22,7 +22,7 @@ export default function ChurchStatistics() {
         {/* Chart container that takes most of the height */}
         <div className="flex-1 relative overflow-hidden">
           <div 
-            className="transition-transform duration-1000 ease-in-out h-full"
+            className="transition-transform duration-500 ease-in-out h-full"
             style={{ 
               transform: `translateY(-${currentIndex * 100}%)`
             }}
