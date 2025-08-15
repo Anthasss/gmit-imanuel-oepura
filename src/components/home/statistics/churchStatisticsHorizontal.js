@@ -17,28 +17,26 @@ export default function ChurchStatisticsHorizontal() {
   }, [totalSlides]);
 
   return (
-    <div className="w-full bg-base-300 p-6 py-8 overflow-hidden">
+    <div className="block md:hidden w-full bg-base-300 p-6 py-8 overflow-hidden">
       <div className="flex flex-col h-96">
         {/* Chart container that takes most of the height */}
-        <div className="flex-1 relative overflow-hidden">
+        <div className="flex-1 relative overflow-hidden min-h-0">
           <div
             className="transition-transform duration-500 ease-in-out h-full flex"
             style={{
               transform: `translateX(-${currentIndex * 100}%)`,
-              width: `${totalSlides * 100}%`,
             }}
           >
             {chartData.map((chart, index) => (
               <div
                 key={index}
-                className="h-full flex-shrink-0 flex justify-center items-center px-8"
-                style={{ width: `${100 / totalSlides}%` }}
+                className="h-full w-full flex-shrink-0 flex justify-center items-center px-8"
               >
-                <div className="w-full max-w-md">
+                <div className="w-80 h-80">
                   <StatPieChart
                     title={chart.title}
                     data={chart.data}
-                    size="large"
+                    size="normal"
                   />
                 </div>
               </div>
