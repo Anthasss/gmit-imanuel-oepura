@@ -5,16 +5,16 @@ import { chartData } from "../../../json/dummyHome";
 export default function ChurchStatisticsHorizontal() {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Calculate how many pairs we have (showing 2 charts at a time)
-  const totalPairs = Math.ceil(chartData.length / 2);
+  // Now we show 1 chart at a time, so total slides equals chartData length
+  const totalSlides = chartData.length;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % totalPairs);
-    }, 4000);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % totalSlides);
+    }, 3000); // Reduced to 3 seconds since only showing 1 chart
 
     return () => clearInterval(interval);
-  }, [totalPairs]);
+  }, [totalSlides]);
 
   return (
     <div className="w-full bg-base-300 p-6 py-8 overflow-hidden">
@@ -24,27 +24,23 @@ export default function ChurchStatisticsHorizontal() {
           <div
             className="transition-transform duration-500 ease-in-out h-full flex"
             style={{
-              transform: `translateX(-${(currentIndex * 100) / totalPairs}%)`,
-              width: `${totalPairs * 100}%`,
+              transform: `translateX(-${currentIndex * 100}%)`,
+              width: `${totalSlides * 100}%`,
             }}
           >
-            {Array.from({ length: totalPairs }, (_, pairIndex) => (
+            {chartData.map((chart, index) => (
               <div
-                key={pairIndex}
-                className="h-full flex-shrink-0 flex gap-6 px-4"
-                style={{ width: `${100 / totalPairs}%` }}
+                key={index}
+                className="h-full flex-shrink-0 flex justify-center items-center px-8"
+                style={{ width: `${100 / totalSlides}%` }}
               >
-                {chartData
-                  .slice(pairIndex * 2, pairIndex * 2 + 2)
-                  .map((chart, chartIndex) => (
-                    <div key={`${pairIndex}-${chartIndex}`} className="flex-1 min-h-0">
-                      <StatPieChart
-                        title={chart.title}
-                        data={chart.data}
-                        size="normal"
-                      />
-                    </div>
-                  ))}
+                <div className="w-full max-w-md">
+                  <StatPieChart
+                    title={chart.title}
+                    data={chart.data}
+                    size="large"
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -52,7 +48,7 @@ export default function ChurchStatisticsHorizontal() {
 
         {/* Indicators at bottom */}
         <div className="flex justify-center space-x-2 py-4">
-          {Array.from({ length: totalPairs }, (_, index) => (
+          {Array.from({ length: totalSlides }, (_, index) => (
             <div
               key={index}
               className={`w-2 h-2 rounded-full transition-colors ${
