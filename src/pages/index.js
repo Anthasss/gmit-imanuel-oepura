@@ -13,7 +13,7 @@ export default function Home() {
       <ChurchStatistics />
 
       {/* Right Column - Existing Content */}
-      <div className="w-4/5 flex flex-col overflow-y-auto">
+      <div className="w-full flex flex-col overflow-y-auto">
         {/* hero */}
         <div className="flex justify-start items-center h-screen">
           <img
@@ -33,7 +33,7 @@ export default function Home() {
         </div>
 
         {/* cta */}
-        <div className="p-8 min-h-screen flex flex-col gap-4">
+        <div className="md:p-8 min-h-screen flex flex-col md:gap-4">
           <JoinUs />
           <WeeklySummary />
         </div>
@@ -45,14 +45,14 @@ export default function Home() {
             alt="Home Head"
             className="absolute inset-0 object-cover w-full h-full"
           />
-          <div className="relative z-10 flex flex-col w-full p-8">
+          <div className="relative z-10 flex flex-col w-full md:p-8">
             <ScheduleRow schedules={schedules} />
             <ScheduleRow schedules={schedules} />
             <ScheduleRow schedules={schedules} />
           </div>
         </div>
 
-        <div className="w-full p-8">
+        <div className="w-full md:p-8">
           <OurLocation />
         </div>
       </div>

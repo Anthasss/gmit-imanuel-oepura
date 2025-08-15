@@ -29,7 +29,7 @@ export default function ScheduleRow({schedules}) {
   };
 
   return (
-    <div className="bg-black/20 py-8 overflow-hidden">
+    <div className="bg-black/20 py-2 overflow-hidden">
       {/* Row title */}
       <div className="divider text-3xl font-bold text-white">Schedule</div>
 

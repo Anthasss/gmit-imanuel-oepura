@@ -17,8 +17,8 @@ export default function ChurchStatistics() {
   }, [totalPairs]);
 
   return (
-    <div className="w-1/5 bg-base-300 p-6 py-16 sticky top-0 h-screen overflow-hidden">
-      <div className="flex flex-col h-full">
+    <div className="hidden lg:flex w-1/5 bg-base-300 p-6 py-16 sticky top-0 h-screen overflow-hidden">
+      <div className="flex flex-col h-full w-full">
         {/* Chart container that takes most of the height */}
         <div className="flex-1 relative overflow-hidden">
           <div 
