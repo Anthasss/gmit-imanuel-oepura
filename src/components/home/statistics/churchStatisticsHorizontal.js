@@ -22,7 +22,7 @@ export default function ChurchStatisticsHorizontal() {
         {/* Chart container that takes most of the height */}
         <div className="flex-1 relative overflow-hidden min-h-0">
           <div
-            className="transition-transform duration-500 ease-in-out h-full flex"
+            className="transition-transform duration-1000 ease-in-out h-full flex"
             style={{
               transform: `translateX(-${currentIndex * 100}%)`,
             }}
