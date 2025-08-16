@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "title": "Lorem Ipsum",
+    "image": "/header/anak.png",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "date": "August 20, 2025",
+    "time": "7:00 PM"
+  },
+  {
+    "id": 2,
+    "title": "Lorem Ipsum",
+    "image": "/header/anak.png",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "date": "August 25, 2025",
+    "time": "9:00 AM"
+  },
+  {
+    "id": 3,
+    "title": "Lorem Ipsum",
+    "image": "/header/anak.png",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "date": "August 30, 2025",
+    "time": "2:00 PM"
+  },
+  {
+    "id": 4,
+    "title": "Lorem Ipsum",
+    "image": "/header/anak.png",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "date": "September 5, 2025",
+    "time": "10:00 AM"
+  },
+  {
+    "id": 5,
+    "title": "Lorem Ipsum",
+    "image": "/header/anak.png",
+    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+    "date": "September 10, 2025",
+    "time": "6:30 PM"
+  }
+]

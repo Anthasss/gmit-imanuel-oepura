@@ -6,6 +6,7 @@ import ChurchStatistics from "@/components/home/statistics/churchStatistics";
 
 import { ctaTexts, schedules } from "@/json/dummyHome";
 import ChurchStatisticsHorizontal from "@/components/home/statistics/churchStatisticsHorizontal";
+import NewsRow from "@/components/home/newsRow";
 
 export default function Home() {
   return (
@@ -35,6 +36,9 @@ export default function Home() {
 
         {/* horizontal statistics */}
         <ChurchStatisticsHorizontal />
+
+        {/* news */}
+        <NewsRow />
 
         {/* cta */}
         <div className="md:p-8 min-h-screen flex flex-col md:gap-4">
