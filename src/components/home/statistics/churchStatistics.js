@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import StatPieChart from "../statPieChart";
+import StatPieChart from "./statPieChart";
 import { chartData } from "../../../json/dummyHome";
 
 export default function ChurchStatistics() {
