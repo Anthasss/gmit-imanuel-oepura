@@ -28,7 +28,7 @@ export default function NewsRow() {
             ))}
           </CarouselContent>
 
-          <div className="flex justify-center gap-4 mt-8">
+          <div className="flex justify-center text-black gap-4 mt-8">
             <CarouselPrevious className="relative left-0 top-0" />
             <CarouselNext className="relative right-0 top-0" />
           </div>
