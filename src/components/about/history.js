@@ -1,6 +1,6 @@
 export default function History() {
   return (
-    <div className="flex flex-col justify-center items-center p-8 gap-4 min-h-[50vh]">
+    <div className="flex flex-col justify-center items-center p-8 gap-4 min-h-[50vh] bg-gray-900">
       <h2 className="text-4xl font-bold">Our History</h2>
       <p className="text-lg leading-relaxed text-justify">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi iaculis est erat, eget lacinia elit varius in. Ut convallis dolor massa, sit amet consectetur justo consequat vitae. Nullam scelerisque erat viverra elit aliquam, a rhoncus justo accumsan. Morbi et tellus ac neque malesuada venenatis ac nec augue. Quisque nibh enim, cursus ut purus ac, facilisis luctus velit. Vivamus sit amet dignissim purus, sit amet imperdiet metus. Nam rutrum dui ante. In aliquam vestibulum nibh, quis sollicitudin eros suscipit et. Curabitur vestibulum ut odio in malesuada. Sed vehicula congue enim vitae viverra.

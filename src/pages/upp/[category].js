@@ -8,7 +8,7 @@ export default function UppCategory(){
     <div>
       <div className="flex justify-center items-center h-screen">
         <img src="/header/anak.png" alt="Anak Head" className="object-cover w-full h-full" />
-        <h1 className="absolute text-8xl font-bold mt-4">UPP {category ? category.charAt(0).toUpperCase() + category.slice(1) : ''}</h1>
+        <h1 className="absolute text-8xl text-white font-bold mt-4">UPP {category ? category.charAt(0).toUpperCase() + category.slice(1) : ''}</h1>
       </div>
 
       {/* upp cards */}

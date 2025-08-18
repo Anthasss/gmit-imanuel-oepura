@@ -10,7 +10,7 @@ export default function Navigation({ children }) {
 
   return (
     <>
-      <div className="drawer">
+      <div className="drawer text-white">
         <input
           id="my-drawer-3"
           type="checkbox"

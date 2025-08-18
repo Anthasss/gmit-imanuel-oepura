@@ -22,6 +22,7 @@ export default function NewsRow() {
                   description={news.description}
                   date={news.date}
                   time={news.time}
+                  link={news.link}
                 />
               </CarouselItem>
             ))}
