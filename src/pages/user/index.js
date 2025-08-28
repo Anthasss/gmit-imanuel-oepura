@@ -1,4 +1,5 @@
 import React from "react";
+import { SquarePen } from "lucide-react";
 
 export default function UserPage() {
   // Dummy data for demonstration
@@ -28,7 +29,7 @@ export default function UserPage() {
             alt="Profile"
             className="rounded-lg w-full h-full max-w-md object-contain mb-6 border-4 border-primary"
           />
-          <button className="btn btn-success w-full mt-2">Edit Profile</button>
+          <button className="btn btn-success w-full mt-2 text-white"><SquarePen className="mr-2" />Edit Profile</button>
         </div>
         {/* Column 2 */}
         <div className="flex flex-col md:w-1/3 w-full gap-6">
