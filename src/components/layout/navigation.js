@@ -1,5 +1,6 @@
-import { Menu } from "lucide-react"; 
-import Link from "next/link";
+import { Menu } from "lucide-react";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 
 export default function Navigation({ children }) {
   const menuItems = [
@@ -32,73 +33,12 @@ export default function Navigation({ children }) {
               <p className="font-extrabold text-2xl">GMIT Imanuel</p>
               <p className="text-2xl">Oepura</p>
             </div>
-            <div className="hidden flex-none lg:block">
-              <ul className="menu menu-horizontal">
-                {/* Navbar menu content here */}
-                {menuItems.map((item) => (
-                  <li key={item.name}>
-                    <a href={item.path}>{item.name}</a>
-                  </li>
-                ))}
-
-                {/* upp menus */}
-                <li>
-                  <details>
-                    <summary>UPP</summary>
-                    <ul className="bg-base-100 rounded-t-none p-2 dropdown-content right-0">
-                      <li>
-                        <Link href="/upp/anak">Anak</Link>
-                      </li>
-                      <li>
-                        <Link href="/upp/pemuda">Pemuda</Link>
-                      </li>
-                    </ul>
-                  </details>
-                </li>
-                <li>
-                  <Link
-                    className="border border-success rounded-full text-success px-4 py-1 font-bold"
-                    href="/login"
-                  >
-                    Login
-                  </Link>
-                </li>
-              </ul>
-            </div>
+            <Navbar menuItems={menuItems} />
           </div>
           {/* Page content here */}
           <main>{children}</main>
         </div>
-        <div className="drawer-side z-[60]">
-          <label
-            htmlFor="my-drawer-3"
-            aria-label="close sidebar"
-            className="drawer-overlay"
-          ></label>
-          <ul className="menu bg-base-200 min-h-full w-80 p-4">
-            <div className="mb-4">
-              <p className="font-extrabold text-2xl">GMIT Imanuel</p>
-              <p className="text-2xl">Oepura</p>
-            </div>
-            {/* Sidebar content here */}
-            {menuItems.map((item) => (
-              <li key={item.name}>
-                <a href={item.path}>{item.name}</a>
-              </li>
-            ))}
-
-            {/* upp menus */}
-            <h2>UPP</h2>
-            <ul>
-              <li>
-                <Link href="/upp/anak">Anak</Link>
-              </li>
-              <li>
-                <Link href="/upp/pemuda">Pemuda</Link>
-              </li>
-            </ul>
-          </ul>
-        </div>
+        <Sidebar menuItems={menuItems} />
       </div>
     </>
   );
