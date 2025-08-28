@@ -5,7 +5,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="w-screen h-screen grid place-items-center bg-base-100">
+    <div className="w-full h-screen grid place-items-center bg-base-100 overflow-x-hidden">
       <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
         <legend className="fieldset-legend">Login</legend>
 

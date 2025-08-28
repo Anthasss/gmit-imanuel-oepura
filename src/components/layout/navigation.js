@@ -55,6 +55,14 @@ export default function Navigation({ children }) {
                     </ul>
                   </details>
                 </li>
+                <li>
+                  <Link
+                    className="border border-success rounded-full text-success px-4 py-1 font-bold"
+                    href="/login"
+                  >
+                    Login
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>
