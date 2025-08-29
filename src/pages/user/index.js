@@ -5,18 +5,20 @@ export default function UserPage() {
   // Dummy data for demonstration
   const user = {
     profilePic: "https://placehold.co/150x150?text=Profile",
-    nik: "1234567890123456",
+    idJemaat: "1234567890123456",
+    idKeluarga: "6543210987654321",
+    statusDalamKel: "Anak",
+    idSuku: "TIM01",
+    idPendidikan: "S1",
+    idPekerjaan: "SWENG",
+    idPendapatan: "PEND01",
+    idJaminan: "BPJS01",
+    idAtestasi: "ATEST01",
+    idPernikahan: "PRNK01",
     nama: "Imanuel Oepura",
-    jenisKelamin: "Laki-laki",
-    tanggalLahir: "01-01-1990",
-    golonganDarah: "O",
-    alamat: "Jl. Mawar No. 123, Kupang",
-    statusKeluarga: "Anak",
-    suku: "Timor",
-    pendidikan: "S1",
-    pekerjaan: "Software Engineer",
-    pendapatan: "Rp 10.000.000",
-    jaminanKesehatan: "BPJS"
+    jenisKelamin: true, // true = Laki-laki, false = Perempuan
+    tanggalLahir: "1990-01-01",
+    golDarah: "O"
   };
 
   return (
@@ -34,8 +36,12 @@ export default function UserPage() {
         {/* Column 2 */}
         <div className="flex flex-col md:w-1/3 w-full gap-6">
           <div>
-            <div className="text-gray-300 font-normal">NIK</div>
-            <div className="text-white font-bold">{user.nik}</div>
+            <div className="text-gray-300 font-normal">ID Jemaat</div>
+            <div className="text-white font-bold">{user.idJemaat}</div>
+          </div>
+          <div>
+            <div className="text-gray-300 font-normal">ID Keluarga</div>
+            <div className="text-white font-bold">{user.idKeluarga}</div>
           </div>
           <div>
             <div className="text-gray-300 font-normal">Nama</div>
@@ -43,7 +49,7 @@ export default function UserPage() {
           </div>
           <div>
             <div className="text-gray-300 font-normal">Jenis Kelamin</div>
-            <div className="text-white font-bold">{user.jenisKelamin}</div>
+            <div className="text-white font-bold">{user.jenisKelamin ? "Laki-laki" : "Perempuan"}</div>
           </div>
           <div>
             <div className="text-gray-300 font-normal">Tanggal Lahir</div>
@@ -51,38 +57,42 @@ export default function UserPage() {
           </div>
           <div>
             <div className="text-gray-300 font-normal">Golongan Darah</div>
-            <div className="text-white font-bold">{user.golonganDarah}</div>
+            <div className="text-white font-bold">{user.golDarah}</div>
           </div>
           <div>
-            <div className="text-gray-300 font-normal">Alamat</div>
-            <div className="text-white font-bold">{user.alamat}</div>
+            <div className="text-gray-300 font-normal">ID Pernikahan</div>
+            <div className="text-white font-bold">{user.idPernikahan}</div>
           </div>
         </div>
         {/* Column 3 */}
         <div className="flex flex-col md:w-1/3 w-full gap-6">
           <div>
             <div className="text-gray-300 font-normal">Status dalam keluarga</div>
-            <div className="text-white font-bold">{user.statusKeluarga}</div>
+            <div className="text-white font-bold">{user.statusDalamKel}</div>
           </div>
           <div>
-            <div className="text-gray-300 font-normal">Suku</div>
-            <div className="text-white font-bold">{user.suku}</div>
+            <div className="text-gray-300 font-normal">ID Suku</div>
+            <div className="text-white font-bold">{user.idSuku}</div>
           </div>
           <div>
-            <div className="text-gray-300 font-normal">Pendidikan</div>
-            <div className="text-white font-bold">{user.pendidikan}</div>
+            <div className="text-gray-300 font-normal">ID Pendidikan</div>
+            <div className="text-white font-bold">{user.idPendidikan}</div>
           </div>
           <div>
-            <div className="text-gray-300 font-normal">Pekerjaan</div>
-            <div className="text-white font-bold">{user.pekerjaan}</div>
+            <div className="text-gray-300 font-normal">ID Pekerjaan</div>
+            <div className="text-white font-bold">{user.idPekerjaan}</div>
           </div>
           <div>
-            <div className="text-gray-300 font-normal">Pendapatan</div>
-            <div className="text-white font-bold">{user.pendapatan}</div>
+            <div className="text-gray-300 font-normal">ID Pendapatan</div>
+            <div className="text-white font-bold">{user.idPendapatan}</div>
           </div>
           <div>
-            <div className="text-gray-300 font-normal">Jaminan Kesehatan</div>
-            <div className="text-white font-bold">{user.jaminanKesehatan}</div>
+            <div className="text-gray-300 font-normal">ID Jaminan</div>
+            <div className="text-white font-bold">{user.idJaminan}</div>
+          </div>
+          <div>
+            <div className="text-gray-300 font-normal">ID Atestasi</div>
+            <div className="text-white font-bold">{user.idAtestasi}</div>
           </div>
         </div>
       </div>
