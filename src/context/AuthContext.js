@@ -11,9 +11,11 @@ export function AuthProvider({ children }) {
     supabase.auth.getUser().then(({ data }) => setUser(data?.user || null));
 
     // Listen for auth changes
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user || null);
+      }
+    );
 
     return () => {
       listener.subscription.unsubscribe();
