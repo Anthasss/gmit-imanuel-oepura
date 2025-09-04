@@ -1,0 +1,228 @@
+import {
+  Activity,
+  BarChart3,
+  Bell,
+  BookOpen,
+  Building,
+  Building2,
+  Calendar,
+  CheckSquare,
+  ClipboardList,
+  Database,
+  DollarSign,
+  FileText,
+  Heart,
+  Home,
+  Mail,
+  Map,
+  MapPin,
+  MessageSquare,
+  Settings,
+  Shield,
+  Tag,
+  UserCheck,
+  UserCog,
+  UserPlus,
+  Users,
+  UsersRound,
+} from "lucide-react";
+
+// Role-based configurations
+export const roleConfigs = {
+  admin: {
+    roleTitle: "Admin",
+    fullTitle: "GMIT Admin",
+    description:
+      "Sistem administrasi gereja untuk mengelola data jemaat, kegiatan, dan keuangan dengan mudah dan efisien.",
+    baseRoute: "/admin",
+    dashboardRoute: "/admin/dashboard",
+    logoIcon: Shield,
+    userInfo: {
+      name: "Admin GMIT",
+      email: "admin@gmit-imanuel.org",
+      organization: "Imanuel Oepura",
+    },
+    navigation: [
+      { href: "/admin/dashboard", label: "Dashboard", icon: Home },
+      { href: "/admin/user", label: "Kelola Akun", icon: Users },
+      { href: "/admin/jemaat", label: "Jemaat", icon: Users },
+      { href: "/admin/kegiatan", label: "Kegiatan", icon: Calendar },
+      { href: "/admin/keluarga", label: "Keluarga", icon: UsersRound },
+      { href: "/admin/rayon", label: "Rayon", icon: MapPin },
+      { href: "/admin/keuangan", label: "Keuangan", icon: DollarSign },
+      { href: "/admin/laporan", label: "Laporan", icon: FileText },
+      {
+        href: "/admin/data-master",
+        label: "Data Master",
+        icon: Database,
+        children: [
+          {
+            href: "/admin/data-master/wilayah-administratif",
+            label: "Wilayah Administratif",
+            icon: Map,
+          },
+          {
+            href: "/admin/data-master/status-keluarga",
+            label: "Status Keluarga",
+            icon: MapPin,
+          },
+          {
+            href: "/admin/data-master/keadaan-rumah",
+            label: "Keadaan Rumah",
+            icon: Building,
+          },
+          {
+            href: "/admin/data-master/status-kepemilikan-rumah",
+            label: "Status Kepemilikan Rumah",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/status-dalam-keluarga",
+            label: "Status Dalam Keluarga",
+            icon: UserCog,
+          },
+          {
+            href: "/admin/data-master/suku",
+            label: "Suku",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/pekerjaan",
+            label: "Pekerjaan",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/pendidikan",
+            label: "Pendidikan",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/pendapatan",
+            label: "Pendapatan",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/jaminan-kesehatan",
+            label: "Jaminan Kesehatan",
+            icon: Tag,
+          },
+        ],
+      },
+      { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
+      { href: "/admin/settings", label: "Pengaturan", icon: Settings },
+    ],
+    footerLinks: [
+      { href: "/admin/dashboard", label: "Dashboard" },
+      { href: "/admin/members", label: "Manajemen Jemaat" },
+      { href: "/admin/events", label: "Manajemen Acara" },
+      { href: "/admin/finance", label: "Keuangan" },
+    ],
+  },
+
+  jemaat: {
+    roleTitle: "Jemaat",
+    fullTitle: "Portal Jemaat",
+    description:
+      "Portal untuk jemaat GMIT Imanuel Oepura untuk mengakses informasi kegiatan, persembahan, dan layanan gereja.",
+    baseRoute: "/jemaat",
+    dashboardRoute: "/jemaat/dashboard",
+    logoIcon: Heart,
+    userInfo: {
+      name: "Jemaat GMIT",
+      email: "jemaat@gmit-imanuel.org",
+      organization: "Imanuel Oepura",
+    },
+    navigation: [
+      { href: "/jemaat/dashboard", label: "Beranda", icon: Home },
+      { href: "/jemaat/profile", label: "Profil Saya", icon: UserCheck },
+      { href: "/jemaat/events", label: "Kegiatan", icon: Calendar },
+      { href: "/jemaat/offering", label: "Persembahan", icon: DollarSign },
+      { href: "/jemaat/attendance", label: "Kehadiran", icon: CheckSquare },
+      { href: "/jemaat/prayer", label: "Doa", icon: Heart },
+      { href: "/jemaat/news", label: "Berita", icon: Bell },
+    ],
+    footerLinks: [
+      { href: "/jemaat/dashboard", label: "Beranda" },
+      { href: "/jemaat/events", label: "Kegiatan" },
+      { href: "/jemaat/offering", label: "Persembahan" },
+      { href: "/jemaat/prayer", label: "Doa" },
+    ],
+  },
+
+  majelis: {
+    roleTitle: "Majelis",
+    fullTitle: "Portal Majelis",
+    description:
+      "Sistem manajemen untuk majelis gereja dalam mengawasi dan mengelola kegiatan pelayanan.",
+    baseRoute: "/majelis",
+    dashboardRoute: "/majelis/dashboard",
+    logoIcon: Building2,
+    userInfo: {
+      name: "Majelis GMIT",
+      email: "majelis@gmit-imanuel.org",
+      organization: "Imanuel Oepura",
+    },
+    navigation: [
+      { href: "/majelis/dashboard", label: "Dashboard", icon: Home },
+      { href: "/majelis/oversight", label: "Pengawasan", icon: Activity },
+      { href: "/majelis/meetings", label: "Rapat", icon: Users },
+      { href: "/majelis/decisions", label: "Keputusan", icon: ClipboardList },
+      { href: "/majelis/programs", label: "Program", icon: BookOpen },
+      { href: "/majelis/reports", label: "Laporan", icon: FileText },
+      {
+        href: "/majelis/communications",
+        label: "Komunikasi",
+        icon: MessageSquare,
+      },
+    ],
+    footerLinks: [
+      { href: "/majelis/dashboard", label: "Dashboard" },
+      { href: "/majelis/oversight", label: "Pengawasan" },
+      { href: "/majelis/meetings", label: "Rapat" },
+      { href: "/majelis/reports", label: "Laporan" },
+    ],
+  },
+
+  employee: {
+    roleTitle: "Pegawai",
+    fullTitle: "Portal Pegawai",
+    description:
+      "Sistem untuk pegawai gereja dalam mengelola tugas harian dan koordinasi pelayanan.",
+    baseRoute: "/employee",
+    dashboardRoute: "/employee/dashboard",
+    logoIcon: UserPlus,
+    userInfo: {
+      name: "Pegawai GMIT",
+      email: "employee@gmit-imanuel.org",
+      organization: "Imanuel Oepura",
+    },
+    navigation: [
+      { href: "/employee/dashboard", label: "Dashboard", icon: Home },
+      { href: "/employee/tasks", label: "Tugas", icon: CheckSquare },
+      { href: "/employee/schedule", label: "Jadwal", icon: Calendar },
+      { href: "/employee/services", label: "Pelayanan", icon: Heart },
+      { href: "/employee/attendance", label: "Absensi", icon: UserCheck },
+      { href: "/employee/reports", label: "Laporan", icon: FileText },
+      { href: "/employee/communication", label: "Komunikasi", icon: Mail },
+    ],
+    footerLinks: [
+      { href: "/employee/dashboard", label: "Dashboard" },
+      { href: "/employee/tasks", label: "Tugas" },
+      { href: "/employee/schedule", label: "Jadwal" },
+      { href: "/employee/services", label: "Pelayanan" },
+    ],
+  },
+};
+
+// Common church contact information
+export const churchContact = {
+  address: "Jl. Gereja No. 123, Kupang, NTT",
+  phone: "+62 380-123456",
+  email: "info@gmit-imanuel.org",
+  website: "www.gmit-imanuel.org",
+};
+
+// Helper function to get role config
+export const getRoleConfig = (role) => {
+  return roleConfigs[role] || roleConfigs.admin;
+};
