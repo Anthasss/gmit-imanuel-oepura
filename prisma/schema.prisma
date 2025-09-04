@@ -1,0 +1,427 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  // output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  JEMAAT
+  MAJELIS
+  EMPLOYEE
+}
+
+// === DATA MASTER ==//
+
+model Provinsi {
+  id       String    @id @default(dbgenerated("concat('prov_', gen_random_uuid())")) @db.VarChar(80)
+  nama     String    @db.VarChar(50)
+  kotaKabs KotaKab[]
+
+  isActive Boolean @default(true)
+
+  @@map("provinsi")
+}
+
+model KotaKab {
+  id         String @id @default(dbgenerated("concat('kab_', gen_random_uuid())")) @db.VarChar(80)
+  idProvinsi String @db.VarChar(80)
+  nama       String @db.VarChar(50)
+
+  provinsi   Provinsi    @relation(fields: [idProvinsi], references: [id])
+  kecamatans Kecamatan[]
+
+  isActive Boolean @default(true)
+
+  @@map("kota_kab")
+}
+
+model Kecamatan {
+  id        String @id @default(dbgenerated("concat('kec_', gen_random_uuid())")) @db.VarChar(80)
+  idKotaKab String @db.VarChar(80)
+  nama      String @db.VarChar(50)
+
+  kotaKab    KotaKab     @relation(fields: [idKotaKab], references: [id])
+  kelurahans Kelurahan[]
+
+  isActive Boolean @default(true)
+
+  @@map("kecamatan")
+}
+
+model Kelurahan {
+  id          String @id @default(dbgenerated("concat('kel_', gen_random_uuid())")) @db.VarChar(80)
+  idKecamatan String @db.VarChar(80)
+  nama        String @db.VarChar(50)
+  kodePos     String @db.VarChar(10) // Tambahan kodepos
+
+  isActive Boolean @default(true)
+
+  kecamatan Kecamatan @relation(fields: [idKecamatan], references: [id])
+  alamats   Alamat[]
+
+  @@map("kelurahan")
+}
+
+model Alamat {
+  id          String @id @default(dbgenerated("concat('almt_', gen_random_uuid())")) @db.VarChar(80)
+  idKelurahan String @db.VarChar(80)
+  rt          Int
+  rw          Int
+  jalan       String @db.VarChar(50)
+
+  kelurahan Kelurahan  @relation(fields: [idKelurahan], references: [id])
+  keluargas Keluarga[]
+
+  @@map("alamat")
+}
+
+model StatusKeluarga {
+  id        String     @id @default(dbgenerated("concat('skel_', gen_random_uuid())")) @db.VarChar(80)
+  status    String     @db.VarChar(50)
+  isActive  Boolean    @default(true)
+  keluargas Keluarga[]
+
+  @@map("status_keluarga")
+}
+
+model KeadaanRumah {
+  id        String     @id @default(dbgenerated("concat('krum_', gen_random_uuid())")) @db.VarChar(80)
+  keadaan   String     @db.VarChar(50)
+  isActive  Boolean    @default(true)
+  keluargas Keluarga[]
+
+  @@map("keadaan_rumah")
+}
+
+model StatusKepemilikanRumah {
+  id        String     @id @default(dbgenerated("concat('srum_', gen_random_uuid())")) @db.VarChar(80)
+  status    String     @db.VarChar(50)
+  isActive  Boolean    @default(true)
+  keluargas Keluarga[]
+
+  @@map("status_kepemilikan_rumah")
+}
+
+model StatusDalamKeluarga {
+  id       String   @id @default(dbgenerated("concat('sdkel_', gen_random_uuid())")) @db.VarChar(80)
+  status   String   @db.VarChar(50)
+  isActive Boolean  @default(true)
+  jemaats  Jemaat[]
+
+  @@map("status_dalam_keluarga")
+}
+
+model Suku {
+  id       String   @id @default(dbgenerated("concat('suku_', gen_random_uuid())")) @db.VarChar(80)
+  namaSuku String   @db.VarChar(50)
+  isActive Boolean  @default(true)
+  jemaats  Jemaat[]
+
+  @@map("suku")
+}
+
+model Pekerjaan {
+  id            String   @id @default(dbgenerated("concat('pkj_', gen_random_uuid())")) @db.VarChar(80)
+  namaPekerjaan String   @db.VarChar(50)
+  isActive      Boolean  @default(true)
+  jemaats       Jemaat[]
+
+  @@map("pekerjaan")
+}
+
+model Pendidikan {
+  id       String   @id @default(dbgenerated("concat('pend_', gen_random_uuid())")) @db.VarChar(80)
+  jenjang  String   @db.VarChar(50)
+  isActive Boolean  @default(true)
+  jemaats  Jemaat[]
+
+  @@map("pendidikan")
+}
+
+model Pendapatan {
+  id       String   @id @default(dbgenerated("concat('pdpt_', gen_random_uuid())")) @db.VarChar(80)
+  label    String   @db.VarChar(50) // contoh: "1 - 3 juta"
+  min      Int
+  max      Int
+  isActive Boolean  @default(true)
+  jemaats  Jemaat[]
+
+  @@map("pendapatan")
+}
+
+model JaminanKesehatan {
+  id           String   @id @default(dbgenerated("concat('jkes_', gen_random_uuid())")) @db.VarChar(80)
+  jenisJaminan String   @db.VarChar(50)
+  isActive     Boolean  @default(true)
+  jemaats      Jemaat[]
+
+  @@map("jaminan_kesehatan")
+}
+
+// === DATA MASTER ==//
+
+model Rayon {
+  id        String @id @default(dbgenerated("concat('ray_', gen_random_uuid())")) @db.VarChar(80)
+  namaRayon String @db.VarChar(50)
+
+  keluargas Keluarga[]
+
+  @@map("rayon")
+}
+
+model Keluarga {
+  id                       String @id @default(dbgenerated("concat('kel_', gen_random_uuid())")) @db.VarChar(80)
+  idAlamat                 String @db.VarChar(80)
+  idStatusKeluarga         String @db.VarChar(80)
+  idStatusKepemilikanRumah String @db.VarChar(80)
+  idKeadaanRumah           String @db.VarChar(80)
+  idRayon                  String @db.VarChar(80)
+  noBagungan               Int
+
+  alamat                 Alamat                 @relation(fields: [idAlamat], references: [id])
+  statusKeluarga         StatusKeluarga         @relation(fields: [idStatusKeluarga], references: [id])
+  statusKepemilikanRumah StatusKepemilikanRumah @relation(fields: [idStatusKepemilikanRumah], references: [id])
+  keadaanRumah           KeadaanRumah           @relation(fields: [idKeadaanRumah], references: [id])
+  rayon                  Rayon                  @relation(fields: [idRayon], references: [id])
+  jemaats                Jemaat[]
+  // ibadahKeluargaJemaats     IbadahKeluargaJemaat[]
+  // ibadahPenerimaans         IbadahPenerimaan[]
+  // ibadahPengeluarans        IbadahPengeluaran[]
+
+  @@map("keluarga")
+}
+
+model User {
+  id       String  @id @default(dbgenerated("concat('usr_', gen_random_uuid())")) @db.VarChar(80)
+  email    String  @unique @db.VarChar(100)
+  password String  @db.VarChar(255)
+  role     Role
+  idJemaat String? @unique @db.VarChar(80) // Optional, hanya untuk role: JEMAAT
+
+  jemaat Jemaat? @relation(fields: [idJemaat], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user")
+}
+
+model Jemaat {
+  id                    String   @id @default(dbgenerated("concat('jmt_', gen_random_uuid())")) @db.VarChar(80)
+  idKeluarga            String   @db.VarChar(80)
+  idStatusDalamKeluarga String   @db.VarChar(80)
+  idSuku                String   @db.VarChar(80)
+  idPendidikan          String   @db.VarChar(80)
+  idPekerjaan           String   @db.VarChar(80)
+  idPendapatan          String   @db.VarChar(80)
+  idJaminanKesehatan    String   @db.VarChar(80)
+  // idAtestasi            String?  @db.VarChar(80)
+  idPernikahan          String?  @db.VarChar(80)
+  nama                  String   @db.VarChar(50)
+  jenisKelamin          Boolean
+  tanggalLahir          DateTime @db.Date
+  golonganDarah         String?  @db.VarChar(5)
+
+  keluarga            Keluarga            @relation(fields: [idKeluarga], references: [id])
+  statusDalamKeluarga StatusDalamKeluarga @relation(fields: [idStatusDalamKeluarga], references: [id])
+  suku                Suku                @relation(fields: [idSuku], references: [id])
+  pendidikan          Pendidikan          @relation(fields: [idPendidikan], references: [id])
+  pekerjaan           Pekerjaan           @relation(fields: [idPekerjaan], references: [id])
+  pendapatan          Pendapatan          @relation(fields: [idPendapatan], references: [id])
+  jaminanKesehatan    JaminanKesehatan    @relation(fields: [idJaminanKesehatan], references: [id])
+  // atestasi              Atestasi?             @relation(fields: [idAtestasi], references: [id])
+  // pernikahan            Pernikahan?           @relation(fields: [idPernikahan], references: [id])
+
+  // baptiss               Baptis[]
+  // sidis                 Sidi[]
+  // ibadahPenerimaans     IbadahPenerimaan[]
+  // ibadahPengeluarans    IbadahPengeluaran[]
+  // ibadahKeluargaJemaatsPemimpin IbadahKeluargaJemaat[] @relation("PemimpinIbadah")
+  User User?
+
+  @@map("jemaat")
+}
+
+// MASIH BINGUNG DISINI.
+
+// model Atestasi {
+//   id           String @id @default(dbgenerated("concat('att_', gen_random_uuid())")) @db.VarChar(80)
+//   gerejaAsal   String @db.VarChar(50)
+//   tanggalMasuk DateTime @db.Date
+
+//   jemaats Jemaat[]
+
+//   @@map("atestasi")
+// }
+
+// model Klasis {
+//   id   String @id @default(dbgenerated("concat('kls_', gen_random_uuid())")) @db.VarChar(80)
+//   nama String @db.VarChar(50)
+
+//   pernikahans Pernikahan[]
+//   baptiss     Baptis[]
+//   sidis       Sidi[]
+
+//   @@map("klasis")
+// }
+
+// model Pernikahan {
+//   id       String @id @default(dbgenerated("concat('nikah_', gen_random_uuid())")) @db.VarChar(80)
+//   idKlasis String @db.VarChar(80)
+//   tanggal  DateTime @db.Date
+
+//   klasis  Klasis @relation(fields: [idKlasis], references: [id])
+//   jemaats Jemaat[]
+
+//   @@map("pernikahan")
+// }
+
+// model Baptis {
+//   id       String @id @default(dbgenerated("concat('bpt_', gen_random_uuid())")) @db.VarChar(80)
+//   idJemaat String @db.VarChar(80)
+//   idKlasis String @db.VarChar(80)
+//   tanggal  DateTime @db.Date
+
+//   jemaat Jemaat @relation(fields: [idJemaat], references: [id])
+//   klasis Klasis @relation(fields: [idKlasis], references: [id])
+
+//   @@map("baptis")
+// }
+
+// model Sidi {
+//   id       String @id @default(dbgenerated("concat('sidi_', gen_random_uuid())")) @db.VarChar(80)
+//   idJemaat String @db.VarChar(80)
+//   idKlasis String @db.VarChar(80)
+//   tanggal  DateTime @db.Date
+
+//   jemaat Jemaat @relation(fields: [idJemaat], references: [id])
+//   klasis Klasis @relation(fields: [idKlasis], references: [id])
+
+//   @@map("sidi")
+// }
+
+// model Ibadah {
+//   id         String @id @default(dbgenerated("concat('ibd_', gen_random_uuid())")) @db.VarChar(80)
+//   namaIbadah String @db.VarChar(50)
+
+//   ibadahKeluargaJemaats IbadahKeluargaJemaat[]
+//   ibadahPenerimaans     IbadahPenerimaan[]
+//   ibadahPengeluarans    IbadahPengeluaran[]
+
+//   @@map("ibadah")
+// }
+
+// model IbadahKeluargaJemaat {
+//   tanggal     DateTime @db.Date
+//   idIbadah    String   @db.VarChar(80)
+//   idPemimpin  String   @db.VarChar(80)
+//   idKeluarga  String   @db.VarChar(80)
+//   firman      String   @db.VarChar(50) // Ayat
+//   jumlahLaki  Int
+//   jumlahPerempuan Int
+
+//   ibadah    Ibadah   @relation(fields: [idIbadah], references: [id])
+//   pemimpin  Jemaat   @relation("PemimpinIbadah", fields: [idPemimpin], references: [id])
+//   keluarga  Keluarga @relation(fields: [idKeluarga], references: [id])
+
+//   @@id([tanggal, idIbadah, idKeluarga])
+//   @@map("ibadah_keluarga_jemaat")
+// }
+
+// model Penerimaan {
+//   id   String @id @default(dbgenerated("concat('pen_', gen_random_uuid())")) @db.VarChar(80)
+//   nama String @db.VarChar(50)
+
+//   ibadahPenerimaans   IbadahPenerimaan[]
+//   kegiatanPenerimaans KegiatanPenerimaan[]
+
+//   @@map("penerimaan")
+// }
+
+// model Pengeluaran {
+//   id   String @id @default(dbgenerated("concat('out_', gen_random_uuid())")) @db.VarChar(80)
+//   nama String @db.VarChar(50)
+
+//   ibadahPengeluarans   IbadahPengeluaran[]
+//   kegiatanPengeluarans KegiatanPengeluaran[]
+
+//   @@map("pengeluaran")
+// }
+
+// model IbadahPenerimaan {
+//   idIbadah      String @db.VarChar(80)
+//   idJemaat      String @db.VarChar(80)
+//   idKeluarga    String @db.VarChar(80)
+//   idPenerimaan  String @db.VarChar(80)
+//   nominal       BigInt
+
+//   ibadah      Ibadah      @relation(fields: [idIbadah], references: [id])
+//   jemaat      Jemaat      @relation(fields: [idJemaat], references: [id])
+//   keluarga    Keluarga    @relation(fields: [idKeluarga], references: [id])
+//   penerimaan  Penerimaan  @relation(fields: [idPenerimaan], references: [id])
+
+//   @@id([idIbadah, idJemaat, idPenerimaan])
+//   @@map("ibadah_penerimaan")
+// }
+
+// model IbadahPengeluaran {
+//   idIbadah      String @db.VarChar(80)
+//   idJemaat      String @db.VarChar(80)
+//   idKeluarga    String @db.VarChar(80)
+//   idPengeluaran String @db.VarChar(80)
+//   nominal       BigInt
+
+//   ibadah      Ibadah      @relation(fields: [idIbadah], references: [id])
+//   jemaat      Jemaat      @relation(fields: [idJemaat], references: [id])
+//   keluarga    Keluarga    @relation(fields: [idKeluarga], references: [id])
+//   pengeluaran Pengeluaran @relation(fields: [idPengeluaran], references: [id])
+
+//   @@id([idIbadah, idJemaat, idPengeluaran])
+//   @@map("ibadah_pengeluaran")
+// }
+
+// model Kegiatan {
+//   id          String @id @default(dbgenerated("concat('kgt_', gen_random_uuid())")) @db.VarChar(80)
+//   nama        String @db.VarChar(50)
+//   deskripsi   String @db.Text
+
+//   kegiatanPenerimaans  KegiatanPenerimaan[]
+//   kegiatanPengeluarans KegiatanPengeluaran[]
+
+//   @@map("kegiatan")
+// }
+
+// model KegiatanPenerimaan {
+//   idKegiatan    String @db.VarChar(80)
+//   idPenerimaan  String @db.VarChar(80)
+//   nominal       BigInt
+
+//   kegiatan    Kegiatan    @relation(fields: [idKegiatan], references: [id])
+//   penerimaan  Penerimaan  @relation(fields: [idPenerimaan], references: [id])
+
+//   @@id([idKegiatan, idPenerimaan])
+//   @@map("kegiatan_penerimaan")
+// }
+
+// model KegiatanPengeluaran {
+//   idKegiatan    String @db.VarChar(80)
+//   idPengeluaran String @db.VarChar(80)
+//   nominal       BigInt
+
+//   kegiatan    Kegiatan    @relation(fields: [idKegiatan], references: [id])
+//   pengeluaran Pengeluaran @relation(fields: [idPengeluaran], references: [id])
+
+//   @@id([idKegiatan, idPengeluaran])
+//   @@map("kegiatan_pengeluaran")
+// }
