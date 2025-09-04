@@ -4,7 +4,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@/components/ui/carousel"
+} from "@/components/ui/Carousel"
 import UppCard from "@/components/upp/uppCard"
 import newsData from "@/json/news.json"
 
