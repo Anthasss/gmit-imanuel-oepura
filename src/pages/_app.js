@@ -4,11 +4,12 @@ import Footer from "@/components/layout/footer";
 import JemaatLayout from "@/components/layout/JemaatLayout";
 import MajelisLayout from "@/components/layout/MajelisLayout";
 import Navigation from "@/components/layout/navigation";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { queryClient } from "@/lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "@/styles/globals.css";
+import "leaflet/dist/leaflet.css";
 import { Toaster } from "sonner";
 
 export default function App({ Component, pageProps, router }) {
@@ -19,6 +20,7 @@ export default function App({ Component, pageProps, router }) {
   const isJemaatPage = pathname.startsWith("/jemaat");
   const isMajelisPage = pathname.startsWith("/majelis");
   const isEmployeePage = pathname.startsWith("/employee");
+  const isOnboardingPage = pathname === "/onboarding";
 
   // If the component has a custom layout, use it
   if (Component.getLayout) {
@@ -87,6 +89,19 @@ export default function App({ Component, pageProps, router }) {
 
             <Component {...pageProps} />
           </EmployeeLayout>
+        </AuthProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    );
+  }
+
+  // For onboarding page, render without navigation and footer
+  if (isOnboardingPage) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Toaster richColors position="top-right" />
+          <Component {...pageProps} />
         </AuthProvider>
         <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
