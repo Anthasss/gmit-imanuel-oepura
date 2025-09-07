@@ -32,7 +32,20 @@
       "Bash(npx prisma studio:*)",
       "Bash(npx prisma db seed:*)",
       "Bash(node:*)",
-      "Read(/D:\\code-3\\gmit-imanuel-oepura\\scripts/**)"
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\scripts/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\src\\pages/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\src\\pages\\admin\\user/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\src\\pages\\admin\\jemaat/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\src\\pages\\admin\\kegiatan/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\src\\pages\\api\\users/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\src\\pages\\api\\users/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\prisma/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\prisma/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\prisma/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\prisma/**)",
+      "Read(/D:\\code-3\\gmit-imanuel-oepura\\prisma/**)",
+      "Bash(npx prisma:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
