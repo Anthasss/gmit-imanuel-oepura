@@ -2,18 +2,54 @@ import prisma from "@/lib/prisma";
 import { apiResponse } from "@/lib/apiHelper";
 import { parseQueryParams } from "@/lib/queryParams";
 import { createApiHandler } from "@/lib/apiHandler";
+import jwt from "jsonwebtoken";
 
 async function handleGet(req, res) {
   try {
+    // Get token from header untuk majelis filter
+    const token = req.headers.authorization?.replace("Bearer ", "");
+    let rayonFilter = {};
+    
+    if (token) {
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const userId = decoded.id;
+
+        // Get user info to check if majelis
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          include: {
+            majelis: true
+          }
+        });
+
+        // If user is majelis, filter by rayon
+        if (user && user.majelis && user.role === 'MAJELIS') {
+          rayonFilter = {
+            idRayon: user.majelis.idRayon
+          };
+        }
+      } catch (error) {
+        console.log("Token validation error:", error.message);
+        // Continue without filter if token invalid
+      }
+    }
+
     const { pagination, sort, where } = parseQueryParams(req.query, {
-      searchField: "noBagungan",
+      searchField: "kepalaKeluarga",
       defaultSortBy: "noBagungan",
     });
 
-    const total = await prisma.keluarga.count({ where });
+    // Combine rayon filter with existing where clause
+    const finalWhere = {
+      ...where,
+      ...rayonFilter
+    };
+
+    const total = await prisma.keluarga.count({ where: finalWhere });
 
     const items = await prisma.keluarga.findMany({
-      where,
+      where: finalWhere,
       skip: pagination.skip,
       take: pagination.take,
       orderBy: {
