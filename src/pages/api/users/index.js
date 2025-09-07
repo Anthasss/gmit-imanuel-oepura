@@ -2,13 +2,14 @@ import prisma from "@/lib/prisma";
 import { apiResponse } from "@/lib/apiHelper";
 import { parseQueryParams } from "@/lib/queryParams";
 import { createApiHandler } from "@/lib/apiHandler";
+import { adminOnly } from "@/lib/apiMiddleware";
 import bcrypt from "bcryptjs";
 
 async function handleGet(req, res) {
   try {
     const { pagination, sort, where } = parseQueryParams(req.query, {
-      searchField: "email",
-      defaultSortBy: "email",
+      searchField: ["username", "email"],
+      defaultSortBy: "username",
     });
 
     const total = await prisma.user.count({ where });
@@ -22,7 +23,9 @@ async function handleGet(req, res) {
       },
       select: {
         id: true,
+        username: true,
         email: true,
+        noWhatsapp: true,
         role: true,
         idJemaat: true,
         createdAt: true,
@@ -81,7 +84,11 @@ async function handleGet(req, res) {
 
 async function handlePost(req, res) {
   try {
-    const { email, password, role, idJemaat } = req.body;
+    let { username, email, password, role, idJemaat, noWhatsapp } = req.body;
+
+    // Convert empty strings to null for optional fields
+    idJemaat = idJemaat && idJemaat.trim() !== '' ? idJemaat : null;
+    noWhatsapp = noWhatsapp && noWhatsapp.trim() !== '' ? noWhatsapp : null;
 
     // Check if email already exists
     const existingUser = await prisma.user.findUnique({
@@ -94,29 +101,53 @@ async function handlePost(req, res) {
         .json(apiResponse(false, null, "Email sudah terdaftar"));
     }
 
-    // Validate jemaat if role is JEMAAT
-    if (role === "JEMAAT" && idJemaat) {
-      const jemaat = await prisma.jemaat.findUnique({
-        where: { id: idJemaat },
+    // Check if username already exists (only if username is provided)
+    if (username) {
+      const existingUsername = await prisma.user.findUnique({
+        where: { username },
       });
 
-      if (!jemaat) {
-        return res
-          .status(404)
-          .json(apiResponse(false, null, "Data jemaat tidak ditemukan"));
-      }
-
-      // Check if jemaat already has a user account
-      const existingUserForJemaat = await prisma.user.findUnique({
-        where: { idJemaat },
-      });
-
-      if (existingUserForJemaat) {
+      if (existingUsername) {
         return res
           .status(409)
-          .json(
-            apiResponse(false, null, "Jemaat ini sudah memiliki akun user")
-          );
+          .json(apiResponse(false, null, "Username sudah terdaftar"));
+      }
+    } else {
+      return res
+        .status(400)
+        .json(apiResponse(false, null, "Username wajib diisi"));
+    }
+
+    // Validate jemaat if role is JEMAAT and idJemaat is provided
+    if (role === "JEMAAT" && idJemaat) {
+      try {
+        const jemaat = await prisma.jemaat.findUnique({
+          where: { id: idJemaat },
+        });
+
+        if (!jemaat) {
+          return res
+            .status(404)
+            .json(apiResponse(false, null, "Data jemaat tidak ditemukan"));
+        }
+
+        // Check if jemaat already has a user account
+        const existingUserForJemaat = await prisma.user.findUnique({
+          where: { idJemaat },
+        });
+
+        if (existingUserForJemaat) {
+          return res
+            .status(409)
+            .json(
+              apiResponse(false, null, "Jemaat ini sudah memiliki akun user")
+            );
+        }
+      } catch (jemaatError) {
+        console.error("Error validating jemaat:", jemaatError);
+        return res
+          .status(500)
+          .json(apiResponse(false, null, "Gagal memvalidasi data jemaat"));
       }
     }
 
@@ -125,14 +156,18 @@ async function handlePost(req, res) {
 
     const newUser = await prisma.user.create({
       data: {
+        username,
         email,
         password: hashedPassword,
+        noWhatsapp,
         role,
-        idJemaat: role === "JEMAAT" ? idJemaat : null,
+        idJemaat: role === "JEMAAT" && idJemaat ? idJemaat : null,
       },
       select: {
         id: true,
+        username: true,
         email: true,
+        noWhatsapp: true,
         role: true,
         idJemaat: true,
         createdAt: true,
@@ -151,13 +186,16 @@ async function handlePost(req, res) {
       .json(apiResponse(true, newUser, "User berhasil ditambahkan"));
   } catch (error) {
     console.error("Error creating user:", error);
+    console.error("Request body:", req.body);
+    console.error("Processed idJemaat:", idJemaat);
     return res
       .status(500)
       .json(apiResponse(false, null, "Gagal menambahkan user", error.message));
   }
 }
 
-export default createApiHandler({
+// Apply admin-only middleware to user management endpoints
+export default adminOnly(createApiHandler({
   GET: handleGet,
   POST: handlePost,
-});
+}));
