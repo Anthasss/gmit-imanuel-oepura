@@ -1,37 +1,121 @@
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import ScheduleCard from "./scheduleCard";
+import publicJadwalService from "../../../services/publicJadwalService";
 
-export default function ScheduleRow({schedules}) {
+export default function ScheduleRow({ 
+  jenisIbadah = null, 
+  kategori = null, 
+  title = "Schedule",
+  limit = 6 
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [schedules, setSchedules] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch schedule data from API
+  useEffect(() => {
+    const fetchSchedules = async () => {
+      try {
+        setLoading(true);
+        const response = await publicJadwalService.getJadwalIbadah({
+          jenisIbadah,
+          kategori, 
+          limit,
+          upcoming: true
+        });
+        
+        const formattedSchedules = publicJadwalService.formatForScheduleRow(response);
+        setSchedules(formattedSchedules);
+      } catch (err) {
+        console.error('Failed to fetch schedules:', err);
+        setError('Gagal memuat jadwal ibadah');
+        setSchedules([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSchedules();
+  }, [jenisIbadah, kategori, limit]);
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % schedules.length);
+    if (schedules.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % schedules.length);
+    }
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + schedules.length) % schedules.length);
+    if (schedules.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + schedules.length) % schedules.length);
+    }
   };
 
   const getSlidePosition = (index) => {
-    const position = (index - currentIndex + schedules.length) % schedules.length;
-    
+    const position =
+      (index - currentIndex + schedules.length) % schedules.length;
+
     switch (position) {
       case 0:
-        return 'left-1/2 -translate-x-[160%] opacity-70 scale-90 lg:block hidden';
+        return "left-1/2 -translate-x-[160%] opacity-70 scale-90 lg:block hidden";
       case 1:
-        return 'left-1/2 -translate-x-1/2 opacity-100 scale-100 z-10';
+        return "left-1/2 -translate-x-1/2 opacity-100 scale-100 z-10";
       case 2:
-        return 'left-1/2 translate-x-[60%] opacity-70 scale-90 lg:block hidden';
+        return "left-1/2 translate-x-[60%] opacity-70 scale-90 lg:block hidden";
       default:
-        return 'left-1/2 translate-x-[250%] opacity-0';
+        return "left-1/2 translate-x-[250%] opacity-0";
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="bg-black/20 py-2 overflow-hidden">
+        <div className="divider text-3xl font-bold text-white">{title}</div>
+        <div className="flex items-center justify-center h-80">
+          <div className="loading loading-spinner loading-lg text-white"></div>
+          <p className="ml-4 text-white">Memuat jadwal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="bg-black/20 py-2 overflow-hidden">
+        <div className="divider text-3xl font-bold text-white">{title}</div>
+        <div className="flex items-center justify-center h-80">
+          <div className="text-red-300 text-center">
+            <svg className="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <p className="text-sm">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if no schedules
+  if (!schedules.length) {
+    return (
+      <div className="bg-black/20 py-2 overflow-hidden">
+        <div className="divider text-3xl font-bold text-white">{title}</div>
+        <div className="flex items-center justify-center h-80">
+          <div className="text-white text-center">
+            <p className="text-lg">Tidak ada jadwal {jenisIbadah ? jenisIbadah.toLowerCase() : 'ibadah'} yang akan datang</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-black/20 py-2 overflow-hidden">
       {/* Row title */}
-      <div className="divider text-3xl font-bold text-white">Schedule</div>
+      <div className="divider text-3xl font-bold text-white">{title}</div>
 
       {/* Slider Container */}
       <div className="relative mx-auto max-w-7xl px-4">
@@ -52,6 +136,10 @@ export default function ScheduleRow({schedules}) {
                 time={schedule.time}
                 location={schedule.location}
                 speaker={schedule.speaker}
+                tema={schedule.tema}
+                firman={schedule.firman}
+                jenisIbadah={schedule.jenisIbadah}
+                rayon={schedule.rayon}
               />
             </div>
           ))}
