@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { apiResponse } from "@/lib/apiHelper";
 import { parseQueryParams } from "@/lib/queryParams";
 import { createApiHandler } from "@/lib/apiHandler";
+import { staffOnly } from "@/lib/apiMiddleware";
 
 async function handleGet(req, res) {
   try {
@@ -129,7 +130,8 @@ async function handlePost(req, res) {
   }
 }
 
-export default createApiHandler({
+// Apply staff-only middleware - data jemaat sensitif
+export default staffOnly(createApiHandler({
   GET: handleGet,
   POST: handlePost,
-});
+}));
