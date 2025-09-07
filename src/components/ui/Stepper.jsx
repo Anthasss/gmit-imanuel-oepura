@@ -132,6 +132,8 @@ export function StepperNavigation({
 }
 
 // Step content wrapper
-export function StepContent({ children, className = "" }) {
+export function StepContent({ children, stepId, className = "" }) {
+  // This component should be used within the context of a parent that provides currentStep
+  // For now, we'll render all children and let the parent handle step visibility
   return <div className={`py-6 ${className}`}>{children}</div>;
 }
