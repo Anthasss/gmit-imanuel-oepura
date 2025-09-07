@@ -1,11 +1,49 @@
 import { useController, useFormContext } from "react-hook-form";
 
-export default function ToggleInput({ name, label }) {
-  const { control } = useFormContext();
-  const {
-    field: { value, onChange },
-  } = useController({ name, control });
+export default function ToggleInput({ name, label, value, onChange }) {
+  // Try to get form context, but handle case where it doesn't exist
+  const formContext = useFormContext();
+  
+  // If we have form context, use react-hook-form
+  if (formContext) {
+    const { control } = formContext;
+    const {
+      field: { value: fieldValue, onChange: fieldOnChange },
+    } = useController({ name, control });
 
+    return (
+      <div style={{ marginBottom: "1rem" }}>
+        <label
+          style={{ display: "block", marginBottom: "0.5rem", fontWeight: 600 }}
+        >
+          {label}
+        </label>
+        <label style={styles.switch}>
+          <input
+            type="checkbox"
+            checked={fieldValue}
+            onChange={(e) => fieldOnChange(e.target.checked)}
+            style={styles.input}
+          />
+          <span
+            style={{
+              ...styles.slider,
+              backgroundColor: fieldValue ? "#4caf50" : "#ccc",
+            }}
+          >
+            <span
+              style={{
+                ...styles.circle,
+                transform: fieldValue ? "translateX(22px)" : "translateX(0)",
+              }}
+            />
+          </span>
+        </label>
+      </div>
+    );
+  }
+
+  // Fallback to regular input when no form context
   return (
     <div style={{ marginBottom: "1rem" }}>
       <label
@@ -16,8 +54,9 @@ export default function ToggleInput({ name, label }) {
       <label style={styles.switch}>
         <input
           type="checkbox"
-          checked={value}
-          onChange={(e) => onChange(e.target.checked)}
+          name={name}
+          checked={value || false}
+          onChange={(e) => onChange?.(e.target.checked)}
           style={styles.input}
         />
         <span
