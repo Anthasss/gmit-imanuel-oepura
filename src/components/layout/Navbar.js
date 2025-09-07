@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function Navbar({ menuItems }) {
-  const { user } = useAuth();
+  const authContext = useAuth();
+  const { user, logout } = authContext || {};
 
   return (
     <div className="hidden flex-none lg:block">
@@ -49,7 +50,11 @@ export default function Navbar({ menuItems }) {
                 <li>
                   <a
                     onClick={async () => {
-                      await supabase.auth.signOut();
+                      if (logout) {
+                        await logout();
+                      } else {
+                        await supabase.auth.signOut();
+                      }
                     }}
                   >
                     Logout
