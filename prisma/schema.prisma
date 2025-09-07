@@ -19,6 +19,7 @@ enum Role {
   JEMAAT
   MAJELIS
   EMPLOYEE
+  PENDETA
 }
 
 // === DATA MASTER ==//
@@ -169,13 +170,17 @@ model JaminanKesehatan {
   @@map("jaminan_kesehatan")
 }
 
+//JABATAN. Contoh: Pendeta, Majelis, Karyawan, dll.
+
 // === DATA MASTER ==//
 
 model Rayon {
   id        String @id @default(dbgenerated("concat('ray_', gen_random_uuid())")) @db.VarChar(80)
   namaRayon String @db.VarChar(50)
 
-  keluargas Keluarga[]
+  keluargas     Keluarga[]
+  jadwalIbadahs JadwalIbadah[]
+  Majelis       Majelis[]
 
   @@map("rayon")
 }
@@ -195,7 +200,7 @@ model Keluarga {
   keadaanRumah           KeadaanRumah           @relation(fields: [idKeadaanRumah], references: [id])
   rayon                  Rayon                  @relation(fields: [idRayon], references: [id])
   jemaats                Jemaat[]
-  // ibadahKeluargaJemaats     IbadahKeluargaJemaat[]
+  JadwalIbadahKeluarga   JadwalIbadah[]
   // ibadahPenerimaans         IbadahPenerimaan[]
   // ibadahPengeluarans        IbadahPengeluaran[]
 
@@ -203,13 +208,17 @@ model Keluarga {
 }
 
 model User {
-  id       String  @id @default(dbgenerated("concat('usr_', gen_random_uuid())")) @db.VarChar(80)
-  email    String  @unique @db.VarChar(100)
-  password String  @db.VarChar(255)
-  role     Role
-  idJemaat String? @unique @db.VarChar(80) // Optional, hanya untuk role: JEMAAT
+  id         String  @id @default(dbgenerated("concat('usr_', gen_random_uuid())")) @db.VarChar(80)
+  username   String? @unique @db.VarChar(50)
+  email      String  @unique @db.VarChar(100)
+  password   String  @db.VarChar(255)
+  noWhatsapp String? @db.VarChar(20)
+  role       Role
+  idJemaat   String? @unique @db.VarChar(80) // Untuk role: JEMAAT
+  idMajelis  String? @unique @db.VarChar(80) // TAMBAH INI - Untuk role: MAJELIS
 
-  jemaat Jemaat? @relation(fields: [idJemaat], references: [id])
+  jemaat  Jemaat?  @relation(fields: [idJemaat], references: [id])
+  majelis Majelis? @relation(fields: [idMajelis], references: [id]) // TAMBAH INI
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -218,20 +227,20 @@ model User {
 }
 
 model Jemaat {
-  id                    String   @id @default(dbgenerated("concat('jmt_', gen_random_uuid())")) @db.VarChar(80)
-  idKeluarga            String   @db.VarChar(80)
-  idStatusDalamKeluarga String   @db.VarChar(80)
-  idSuku                String   @db.VarChar(80)
-  idPendidikan          String   @db.VarChar(80)
-  idPekerjaan           String   @db.VarChar(80)
-  idPendapatan          String   @db.VarChar(80)
-  idJaminanKesehatan    String   @db.VarChar(80)
-  // idAtestasi            String?  @db.VarChar(80)
-  idPernikahan          String?  @db.VarChar(80)
-  nama                  String   @db.VarChar(50)
+  id                    String       @id @default(dbgenerated("concat('jmt_', gen_random_uuid())")) @db.VarChar(80)
+  idKeluarga            String       @db.VarChar(80)
+  idStatusDalamKeluarga String       @db.VarChar(80)
+  idSuku                String       @db.VarChar(80)
+  idPendidikan          String       @db.VarChar(80)
+  idPekerjaan           String       @db.VarChar(80)
+  idPendapatan          String       @db.VarChar(80)
+  idJaminanKesehatan    String       @db.VarChar(80)
+  idPernikahan          String?      @db.VarChar(80)
+  nama                  String       @db.VarChar(50)
   jenisKelamin          Boolean
-  tanggalLahir          DateTime @db.Date
-  golonganDarah         String?  @db.VarChar(5)
+  tanggalLahir          DateTime     @db.Date
+  golonganDarah         String?      @db.VarChar(5)
+  status                StatusJemaat @default(AKTIF) // Status jemaat
 
   keluarga            Keluarga            @relation(fields: [idKeluarga], references: [id])
   statusDalamKeluarga StatusDalamKeluarga @relation(fields: [idStatusDalamKeluarga], references: [id])
@@ -241,103 +250,200 @@ model Jemaat {
   pendapatan          Pendapatan          @relation(fields: [idPendapatan], references: [id])
   jaminanKesehatan    JaminanKesehatan    @relation(fields: [idJaminanKesehatan], references: [id])
   // atestasi              Atestasi?             @relation(fields: [idAtestasi], references: [id])
-  // pernikahan            Pernikahan?           @relation(fields: [idPernikahan], references: [id])
+  pernikahan          Pernikahan?         @relation(fields: [idPernikahan], references: [id])
 
-  // baptiss               Baptis[]
-  // sidis                 Sidi[]
+  baptiss                       Baptis[]
+  sidis                         Sidi[]
   // ibadahPenerimaans     IbadahPenerimaan[]
   // ibadahPengeluarans    IbadahPengeluaran[]
-  // ibadahKeluargaJemaatsPemimpin IbadahKeluargaJemaat[] @relation("PemimpinIbadah")
-  User User?
+  ibadahKeluargaJemaatsPemimpin JadwalIbadah[] @relation("PemimpinIbadah")
+  atestasis                     Atestasi[]
+  User                          User?
+  Majelis                       Majelis[]
 
   @@map("jemaat")
 }
 
-// MASIH BINGUNG DISINI.
+enum TipeAtestasi {
+  MASUK
+  KELUAR
+}
 
-// model Atestasi {
-//   id           String @id @default(dbgenerated("concat('att_', gen_random_uuid())")) @db.VarChar(80)
-//   gerejaAsal   String @db.VarChar(50)
-//   tanggalMasuk DateTime @db.Date
+enum StatusJemaat {
+  AKTIF
+  TIDAK_AKTIF
+  KELUAR
+}
 
-//   jemaats Jemaat[]
+model Atestasi {
+  id              String       @id @default(dbgenerated("concat('att_', gen_random_uuid())")) @db.VarChar(80)
+  idJemaat        String?      @db.VarChar(80) // Untuk jemaat keluar, untuk masuk null dulu
+  idKlasis        String?      @db.VarChar(80) // Klasis asal/tujuan
+  tipe            TipeAtestasi
+  tanggal         DateTime     @db.Date
+  gerejaAsal      String?      @db.VarChar(100) // Untuk jemaat masuk
+  gerejaTujuan    String?      @db.VarChar(100) // Untuk jemaat keluar
+  alasan          String?      @db.Text
+  keterangan      String?      @db.Text
+  namaCalonJemaat String?      @db.VarChar(100) // Nama calon jemaat untuk tipe MASUK
 
-//   @@map("atestasi")
-// }
+  // Relasi ke jemaat (bisa null untuk jemaat baru yang masuk)
+  jemaat Jemaat? @relation(fields: [idJemaat], references: [id])
+  klasis Klasis? @relation(fields: [idKlasis], references: [id])
 
-// model Klasis {
-//   id   String @id @default(dbgenerated("concat('kls_', gen_random_uuid())")) @db.VarChar(80)
-//   nama String @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-//   pernikahans Pernikahan[]
-//   baptiss     Baptis[]
-//   sidis       Sidi[]
+  @@map("atestasi")
+}
 
-//   @@map("klasis")
-// }
+model Klasis {
+  id       String  @id @default(dbgenerated("concat('kls_', gen_random_uuid())")) @db.VarChar(80)
+  nama     String  @db.VarChar(50)
+  isActive Boolean @default(true)
 
-// model Pernikahan {
-//   id       String @id @default(dbgenerated("concat('nikah_', gen_random_uuid())")) @db.VarChar(80)
-//   idKlasis String @db.VarChar(80)
-//   tanggal  DateTime @db.Date
+  pernikahans Pernikahan[]
+  baptiss     Baptis[]
+  sidis       Sidi[]
+  atestasis   Atestasi[]
 
-//   klasis  Klasis @relation(fields: [idKlasis], references: [id])
-//   jemaats Jemaat[]
+  @@map("klasis")
+}
 
-//   @@map("pernikahan")
-// }
+model JenisJabatan {
+  id          String    @id @default(dbgenerated("concat('jb_', gen_random_uuid())")) @db.VarChar(80)
+  namaJabatan String    @db.VarChar(50) // Contoh: Pendeta, Majelis, Karyawan, dll.
+  isActive    Boolean   @default(true)
+  majelises   Majelis[]
 
-// model Baptis {
-//   id       String @id @default(dbgenerated("concat('bpt_', gen_random_uuid())")) @db.VarChar(80)
-//   idJemaat String @db.VarChar(80)
-//   idKlasis String @db.VarChar(80)
-//   tanggal  DateTime @db.Date
+  @@map("jenis_jabatan")
+}
 
-//   jemaat Jemaat @relation(fields: [idJemaat], references: [id])
-//   klasis Klasis @relation(fields: [idKlasis], references: [id])
+model Majelis {
+  id          String    @id @default(dbgenerated("concat('mjl_', gen_random_uuid())")) @db.VarChar(80)
+  namaLengkap String    @db.VarChar(50)
+  mulai       DateTime  @db.Date
+  selesai     DateTime? @db.Date
+  idRayon     String?   @db.VarChar(80) // TAMBAH INI
 
-//   @@map("baptis")
-// }
+  jenisJabatan   JenisJabatan? @relation(fields: [jenisJabatanId], references: [id])
+  jenisJabatanId String?       @db.VarChar(80)
+  jemaat         Jemaat?       @relation(fields: [jemaatId], references: [id])
+  jemaatId       String?       @db.VarChar(80)
+  rayon          Rayon?        @relation(fields: [idRayon], references: [id]) // TAMBAH INI
 
-// model Sidi {
-//   id       String @id @default(dbgenerated("concat('sidi_', gen_random_uuid())")) @db.VarChar(80)
-//   idJemaat String @db.VarChar(80)
-//   idKlasis String @db.VarChar(80)
-//   tanggal  DateTime @db.Date
+  jadwalIbadahs JadwalIbadah[] @relation("MajelisPembuat") // TAMBAH INI
+  User          User?
 
-//   jemaat Jemaat @relation(fields: [idJemaat], references: [id])
-//   klasis Klasis @relation(fields: [idKlasis], references: [id])
+  @@map("majelis")
+}
 
-//   @@map("sidi")
-// }
+model Pernikahan {
+  id       String   @id @default(dbgenerated("concat('nikah_', gen_random_uuid())")) @db.VarChar(80)
+  idKlasis String   @db.VarChar(80)
+  tanggal  DateTime @db.Date
 
-// model Ibadah {
-//   id         String @id @default(dbgenerated("concat('ibd_', gen_random_uuid())")) @db.VarChar(80)
-//   namaIbadah String @db.VarChar(50)
+  klasis  Klasis   @relation(fields: [idKlasis], references: [id])
+  jemaats Jemaat[] 
 
-//   ibadahKeluargaJemaats IbadahKeluargaJemaat[]
-//   ibadahPenerimaans     IbadahPenerimaan[]
-//   ibadahPengeluarans    IbadahPengeluaran[]
+  @@map("pernikahan")
+}
 
-//   @@map("ibadah")
-// }
+model Baptis {
+  id       String   @id @default(dbgenerated("concat('bpt_', gen_random_uuid())")) @db.VarChar(80)
+  idJemaat String   @db.VarChar(80)
+  idKlasis String   @db.VarChar(80)
+  tanggal  DateTime @db.Date
 
-// model IbadahKeluargaJemaat {
-//   tanggal     DateTime @db.Date
-//   idIbadah    String   @db.VarChar(80)
-//   idPemimpin  String   @db.VarChar(80)
-//   idKeluarga  String   @db.VarChar(80)
-//   firman      String   @db.VarChar(50) // Ayat
-//   jumlahLaki  Int
-//   jumlahPerempuan Int
+  jemaat Jemaat @relation(fields: [idJemaat], references: [id])
+  klasis Klasis @relation(fields: [idKlasis], references: [id])
 
-//   ibadah    Ibadah   @relation(fields: [idIbadah], references: [id])
-//   pemimpin  Jemaat   @relation("PemimpinIbadah", fields: [idPemimpin], references: [id])
-//   keluarga  Keluarga @relation(fields: [idKeluarga], references: [id])
+  @@map("baptis")
+}
 
-//   @@id([tanggal, idIbadah, idKeluarga])
-//   @@map("ibadah_keluarga_jemaat")
-// }
+model Sidi {
+  id       String   @id @default(dbgenerated("concat('sidi_', gen_random_uuid())")) @db.VarChar(80)
+  idJemaat String   @db.VarChar(80)
+  idKlasis String   @db.VarChar(80)
+  tanggal  DateTime @db.Date
+
+  jemaat Jemaat @relation(fields: [idJemaat], references: [id])
+  klasis Klasis @relation(fields: [idKlasis], references: [id])
+
+  @@map("sidi")
+}
+
+//"Ibadah Minggu", "Ibadah Pemuda", "Doa Pagi", dll.
+model JenisIbadah {
+  id         String  @id @default(dbgenerated("concat('ibd_', gen_random_uuid())")) @db.VarChar(80)
+  namaIbadah String  @db.VarChar(50)
+  isActive   Boolean @default(true)
+
+  jadwalIbadahs JadwalIbadah[]
+
+  @@map("jenis_ibadah")
+}
+
+model KategoriJadwal {
+  id           String  @id @default(dbgenerated("concat('ktg_', gen_random_uuid())")) @db.VarChar(80)
+  namaKategori String  @db.VarChar(50) // "Keluarga", "Mingguan", "Bulanan", "Khusus", dll
+  deskripsi    String? @db.Text
+  isActive     Boolean @default(true)
+
+  jadwalIbadahs JadwalIbadah[]
+
+  @@map("kategori_jadwal")
+}
+
+model JadwalIbadah {
+  id            String @id @default(dbgenerated("concat('jdw_', gen_random_uuid())")) @db.VarChar(80)
+  idJenisIbadah String @db.VarChar(80)
+  idKategori    String @db.VarChar(80)
+  idPemimpin    String @db.VarChar(80)
+
+  // Fields yang bersifat opsional tergantung kategori
+  idKeluarga String? @db.VarChar(80) // Untuk ibadah keluarga
+  idRayon    String? @db.VarChar(80) // Untuk ibadah rayon
+
+  judul        String    @db.VarChar(100)
+  tanggal      DateTime  @db.Date
+  waktuMulai   DateTime? @db.Time
+  waktuSelesai DateTime? @db.Time
+  
+  // Lokasi fields - diperluas untuk detail lokasi
+  alamat          String? @db.VarChar(200) // Alamat lengkap
+  lokasi          String? @db.VarChar(100) // Nama lokasi/gedung
+  latitude        Float?                   // Koordinat latitude
+  longitude       Float?                   // Koordinat longitude
+  googleMapsLink  String? @db.Text        // Link Google Maps
+  
+  firman       String?   @db.VarChar(100) // Ayat
+  tema         String?   @db.VarChar(100)
+  keterangan   String?   @db.Text
+
+  idPembuat String? @db.VarChar(80) // ID Majelis yang membuat jadwal
+
+  // Statistik peserta (opsional)
+  jumlahLaki      Int?
+  jumlahPerempuan Int?
+  targetPeserta   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  jenisIbadah JenisIbadah    @relation(fields: [idJenisIbadah], references: [id])
+  kategori    KategoriJadwal @relation(fields: [idKategori], references: [id])
+  pemimpin    Jemaat         @relation("PemimpinIbadah", fields: [idPemimpin], references: [id])
+  keluarga    Keluarga?      @relation(fields: [idKeluarga], references: [id])
+  rayon       Rayon?         @relation(fields: [idRayon], references: [id])
+
+  // Untuk peserta yang hadir
+  pembuat   Majelis? @relation("MajelisPembuat", fields: [idPembuat], references: [id])
+  majelisId String?  @db.VarChar(80)
+
+  @@map("jadwal_ibadah")
+}
 
 // model Penerimaan {
 //   id   String @id @default(dbgenerated("concat('pen_', gen_random_uuid())")) @db.VarChar(80)
