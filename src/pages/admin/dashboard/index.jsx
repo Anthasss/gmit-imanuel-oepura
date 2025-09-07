@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Users,
   Calendar,
@@ -25,109 +25,71 @@ import {
   formatCurrency,
   formatPercentage,
 } from "@/lib/formatUtils";
+import dashboardService from "@/services/dashboardService";
 
 export default function DashboardPageAdmin() {
-  // Dummy data for demonstration
-  const stats = {
-    totalJemaat: 1247,
-    activeMembers: 1180,
-    newMembersThisMonth: 12,
-    upcomingEvents: 5,
-    monthlyOffering: 85600000,
-    pendingApprovals: 3,
-  };
+  const [stats, setStats] = useState({
+    totalMembers: 0,
+    membersByGender: { male: 0, female: 0 },
+    totalFamilies: 0,
+    sacraments: {
+      baptis: { total: 0, thisYear: 0 },
+      sidi: { total: 0, thisYear: 0 },
+      pernikahan: { total: 0, thisYear: 0 }
+    },
+    ageGroups: { children: 0, youth: 0, adults: 0, elderly: 0 }
+  });
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: "baptis",
-      member: "Maria Sari",
-      date: "2025-08-25",
-      status: "completed",
-    },
-    {
-      id: 2,
-      type: "wedding",
-      member: "John & Lisa",
-      date: "2025-08-30",
-      status: "pending",
-    },
-    {
-      id: 3,
-      type: "atestasi",
-      member: "David Purba",
-      date: "2025-08-28",
-      status: "approved",
-    },
-    {
-      id: 4,
-      type: "membership",
-      member: "Grace Hutabarat",
-      date: "2025-08-29",
-      status: "pending",
-    },
-  ];
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        const [dashboardStats, activities, events] = await Promise.all([
+          dashboardService.getDashboardStats(),
+          dashboardService.getRecentActivities(),
+          dashboardService.getUpcomingEvents()
+        ]);
 
-  const upcomingEvents = [
-    {
-      id: 1,
-      title: "Ibadah Minggu",
-      date: "2025-09-01",
-      time: "08:00",
-      type: "worship",
-    },
-    {
-      id: 2,
-      title: "Komsel Remaja",
-      date: "2025-09-02",
-      time: "19:00",
-      type: "fellowship",
-    },
-    {
-      id: 3,
-      title: "Doa Pagi",
-      date: "2025-09-03",
-      time: "06:00",
-      type: "prayer",
-    },
-    {
-      id: 4,
-      title: "Persekutuan Wanita",
-      date: "2025-09-04",
-      time: "14:00",
-      type: "fellowship",
-    },
-    {
-      id: 5,
-      title: "Ibadah Kaum Bapak",
-      date: "2025-09-05",
-      time: "19:30",
-      type: "worship",
-    },
-  ];
+        setStats(dashboardStats);
+        setRecentActivities(activities);
+        setUpcomingEvents(events);
+      } catch (err) {
+        console.error('Failed to load dashboard data:', err);
+        setError('Gagal memuat data dashboard');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDashboardData();
+  }, []);
 
   const headerStats = [
     {
       label: "Total Jemaat",
-      value: formatNumber(stats.totalJemaat),
+      value: formatNumber(stats.totalMembers || 0),
       icon: Users,
       iconBg: "bg-blue-100",
       iconColor: "text-blue-600",
-      change: `+${stats.newMembersThisMonth} bulan ini`,
+      change: `${stats.sacraments?.baptis?.thisYear || 0} baptis tahun ini`,
       changeType: "positive",
     },
     {
-      label: "Anggota Aktif",
-      value: formatNumber(stats.activeMembers),
+      label: "Total Keluarga",
+      value: formatNumber(stats.totalFamilies || 0),
       icon: UserCheck,
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
-      change: formatPercentage((stats.activeMembers / stats.totalJemaat) * 100),
+      change: `${stats.membersByGender?.male || 0}L, ${stats.membersByGender?.female || 0}P`,
       changeType: "neutral",
     },
     {
       label: "Acara Mendatang",
-      value: stats.upcomingEvents,
+      value: upcomingEvents.length,
       icon: Calendar,
       iconBg: "bg-purple-100",
       iconColor: "text-purple-600",
@@ -135,12 +97,12 @@ export default function DashboardPageAdmin() {
       changeType: "neutral",
     },
     {
-      label: "Perlu Persetujuan",
-      value: stats.pendingApprovals,
+      label: "Baptis & Sidi",
+      value: `${stats.sacraments?.baptis?.total || 0}/${stats.sacraments?.sidi?.total || 0}`,
       icon: AlertCircle,
       iconBg: "bg-orange-100",
       iconColor: "text-orange-600",
-      change: "Memerlukan tindakan",
+      change: "Total baptis/sidi",
       changeType: "neutral",
     },
   ];
@@ -171,6 +133,30 @@ export default function DashboardPageAdmin() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Memuat dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 mb-2">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Muat Ulang
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <PageHeader
@@ -189,29 +175,31 @@ export default function DashboardPageAdmin() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Persembahan Bulanan
+                Total Pernikahan
               </CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {formatCurrency(stats.monthlyOffering)}
+                {stats.sacraments?.pernikahan?.total || 0}
               </div>
-              <p className="text-xs text-muted-foreground">Agustus 2025</p>
+              <p className="text-xs text-muted-foreground">Total Pernikahan</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Program Aktif
+                Jemaat Remaja
               </CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">
+                {stats.ageGroups?.youth || 0}
+              </div>
               <p className="text-xs text-muted-foreground">
-                Komsel dan kegiatan
+                Jemaat Remaja (13-25)
               </p>
             </CardContent>
           </Card>
@@ -294,30 +282,68 @@ export default function DashboardPageAdmin() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Button className="flex flex-col items-center p-6 h-auto">
+              <Button 
+                className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/jemaat'}
+              >
                 <Users className="h-6 w-6 mb-2" />
-                <span>Tambah Jemaat</span>
+                <span>Kelola Jemaat</span>
               </Button>
               <Button
                 variant="outline"
                 className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/keluarga'}
               >
                 <Calendar className="h-6 w-6 mb-2" />
-                <span>Buat Acara</span>
+                <span>Kelola Keluarga</span>
               </Button>
               <Button
                 variant="outline"
                 className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/baptis'}
               >
                 <BookOpen className="h-6 w-6 mb-2" />
-                <span>Laporan</span>
+                <span>Data Baptis</span>
               </Button>
               <Button
                 variant="outline"
                 className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/sidi'}
               >
                 <DollarSign className="h-6 w-6 mb-2" />
-                <span>Keuangan</span>
+                <span>Data Sidi</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/rayon'}
+              >
+                <Users className="h-6 w-6 mb-2" />
+                <span>Kelola Rayon</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/data-master/klasis'}
+              >
+                <Calendar className="h-6 w-6 mb-2" />
+                <span>Data Klasis</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/users'}
+              >
+                <BookOpen className="h-6 w-6 mb-2" />
+                <span>Kelola User</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="flex flex-col items-center p-6 h-auto"
+                onClick={() => window.location.href = '/admin/laporan'}
+              >
+                <DollarSign className="h-6 w-6 mb-2" />
+                <span>Laporan</span>
               </Button>
             </div>
           </CardContent>
