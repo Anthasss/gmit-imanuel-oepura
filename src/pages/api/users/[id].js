@@ -11,7 +11,9 @@ async function handleGet(req, res) {
       where: { id: id },
       select: {
         id: true,
+        username: true,
         email: true,
+        noWhatsapp: true,
         role: true,
         idJemaat: true,
         createdAt: true,
@@ -19,6 +21,12 @@ async function handleGet(req, res) {
         jemaat: {
           include: {
             statusDalamKeluarga: true,
+            suku: true,
+            pendidikan: true,
+            pekerjaan: true,
+            pendapatan: true,
+            jaminanKesehatan: true,
+            pernikahan: true,
             keluarga: {
               include: {
                 alamat: {
@@ -29,6 +37,13 @@ async function handleGet(req, res) {
                 rayon: true
               }
             }
+          }
+        },
+        majelis: {
+          include: {
+            jenisJabatan: true,
+            rayon: true,
+            jemaat: true
           }
         }
       }
@@ -61,9 +76,32 @@ async function handleGet(req, res) {
 async function handlePatch(req, res) {
   try {
     const { id } = req.query;
-    const { email, password, role, idJemaat } = req.body;
+    let { username, email, password, currentPassword, newPassword, role, idJemaat, noWhatsapp } = req.body;
+    
+    console.log("PATCH User Request Body:", req.body);
+    console.log("idJemaat value:", idJemaat, "type:", typeof idJemaat);
+
+    // Convert empty strings to null for optional fields (only if explicitly provided)
+    if (noWhatsapp !== undefined) {
+      noWhatsapp = noWhatsapp && noWhatsapp.trim() !== '' ? noWhatsapp : null;
+    }
 
     const updateData = {};
+
+    // Update username if provided and different
+    if (username) {
+      const existingUserByUsername = await prisma.user.findUnique({
+        where: { username }
+      });
+
+      if (existingUserByUsername && existingUserByUsername.id !== id) {
+        return res
+          .status(409)
+          .json(apiResponse(false, null, "Username sudah digunakan"));
+      }
+
+      updateData.username = username;
+    }
 
     // Update email if provided and different
     if (email) {
@@ -80,8 +118,32 @@ async function handlePatch(req, res) {
       updateData.email = email;
     }
 
-    // Update password if provided
-    if (password) {
+    // Handle password change with validation
+    if (newPassword && currentPassword) {
+      // Get current user data to verify current password
+      const currentUser = await prisma.user.findUnique({
+        where: { id },
+        select: { password: true }
+      });
+
+      if (!currentUser) {
+        return res
+          .status(404)
+          .json(apiResponse(false, null, "User tidak ditemukan"));
+      }
+
+      // Verify current password
+      const isCurrentPasswordValid = await bcrypt.compare(currentPassword, currentUser.password);
+      if (!isCurrentPasswordValid) {
+        return res
+          .status(400)
+          .json(apiResponse(false, null, "Password lama tidak benar"));
+      }
+
+      // Hash new password
+      updateData.password = await bcrypt.hash(newPassword, 12);
+    } else if (password) {
+      // Fallback for direct password update (for admin use)
       updateData.password = await bcrypt.hash(password, 12);
     }
 
@@ -90,8 +152,18 @@ async function handlePatch(req, res) {
       updateData.role = role;
     }
 
-    // Handle jemaat relation
-    if (role === 'JEMAAT' && idJemaat) {
+    // Update noWhatsapp if provided
+    if (noWhatsapp !== undefined) {
+      updateData.noWhatsapp = noWhatsapp;
+    }
+
+    // Handle jemaat relation - only process if explicitly provided with valid value
+    console.log("Processing idJemaat:", idJemaat, "undefined check:", idJemaat !== undefined);
+    
+    // Only process idJemaat if it's explicitly in the request body and has a valid value
+    if ('idJemaat' in req.body && idJemaat !== undefined && idJemaat !== null && idJemaat !== '') {
+      console.log("idJemaat is explicitly provided with value:", idJemaat);
+      
       // Validate jemaat exists
       const jemaat = await prisma.jemaat.findUnique({
         where: { id: idJemaat }
@@ -115,16 +187,17 @@ async function handlePatch(req, res) {
       }
 
       updateData.idJemaat = idJemaat;
-    } else if (role !== 'JEMAAT') {
-      updateData.idJemaat = null;
     }
+    // If idJemaat is not in request body or is null/empty, don't modify it
 
     const updatedUser = await prisma.user.update({
       where: { id: id },
       data: updateData,
       select: {
         id: true,
+        username: true,
         email: true,
+        noWhatsapp: true,
         role: true,
         idJemaat: true,
         createdAt: true,
