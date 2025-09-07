@@ -1,5 +1,7 @@
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useUser } from "@/hooks/useUser";
 
 import { getRoleConfig } from "@/config/navigationItem";
 import Link from "next/link";
@@ -8,6 +10,7 @@ import {
   Menu,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   LogOut,
   Settings,
   User,
@@ -20,15 +23,19 @@ export default function AppNavbar({
   sidebarOpen,
   setSidebarOpen,
   userInfo = null,
+  isCollapsed = false,
+  setIsCollapsed,
 }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState({});
   const router = useRouter();
+  const { logout } = useAuth();
+  const { user: authUser } = useUser();
   const config = getRoleConfig(role);
   const LogoIcon = config.logoIcon;
 
-  // Use provided userInfo or fall back to config default
-  const currentUser = userInfo || config.userInfo;
+  // Use real user data, fallback to provided userInfo, then config default
+  const currentUser = authUser || userInfo || config.userInfo;
 
   const isActiveRoute = (href) => {
     return router.pathname === href;
@@ -50,6 +57,74 @@ export default function AppNavbar({
     }));
   };
 
+  // Tooltip component for collapsed sidebar
+  const Tooltip = ({ children, content, show }) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const [tooltipPosition, setTooltipPosition] = useState({ top: 0 });
+    const triggerRef = useRef(null);
+    const timeoutRef = useRef(null);
+
+    if (!show || !isCollapsed) return children;
+
+    const handleMouseEnter = () => {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setTooltipPosition({
+          top: rect.top + rect.height / 2,
+        });
+        setIsVisible(true);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      // Add small delay to prevent flickering
+      timeoutRef.current = setTimeout(() => {
+        setIsVisible(false);
+      }, 150);
+    };
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+      };
+    }, []);
+
+    return (
+      <>
+        <div
+          ref={triggerRef}
+          className="w-full"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {children}
+        </div>
+
+        {isVisible && (
+          <div
+            className="fixed left-20 px-3 py-2 bg-gray-900 text-white text-sm rounded-md whitespace-nowrap pointer-events-none shadow-lg transition-opacity duration-200 opacity-100"
+            style={{
+              top: tooltipPosition.top,
+              transform: "translateY(-50%)",
+              zIndex: 10000,
+            }}
+          >
+            {content}
+            <div className="absolute right-full top-1/2 transform -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
+          </div>
+        )}
+      </>
+    );
+  };
+
   const renderMenuItem = (item) => {
     const hasChildren = item.children && item.children.length > 0;
     const IconComponent = item.icon;
@@ -61,39 +136,44 @@ export default function AppNavbar({
       return (
         <li key={item.href}>
           {/* Parent Menu Item */}
-          <div
-            className={`
-              flex items-center justify-between p-3 text-sm font-medium rounded-lg transition-colors cursor-pointer group
-              ${
-                isParentActiveState
-                  ? "bg-blue-100 text-blue-700"
-                  : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
-              }
-            `}
-            onClick={() => toggleSubmenu(item.href)}
-          >
-            <div className="flex items-center">
-              <IconComponent
-                className={`
-                  w-5 h-5 mr-3 transition-colors
-                  ${
-                    isParentActiveState
-                      ? "text-blue-700"
-                      : "text-gray-500 group-hover:text-blue-600"
-                  }
-                `}
-              />
-              {item.label}
+          <Tooltip content={item.label} show={isCollapsed}>
+            <div
+              className={`
+                flex items-center ${isCollapsed ? "justify-center" : "justify-between"} p-3 text-sm font-medium rounded-lg transition-colors cursor-pointer group
+                ${
+                  isParentActiveState
+                    ? "bg-blue-100 text-blue-700"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
+                }
+              `}
+              onClick={() => !isCollapsed && toggleSubmenu(item.href)}
+            >
+              <div
+                className={`flex items-center ${isCollapsed ? "justify-center w-full" : ""}`}
+              >
+                <IconComponent
+                  className={`
+                    w-5 h-5 ${isCollapsed ? "" : "mr-3"} transition-colors
+                    ${
+                      isParentActiveState
+                        ? "text-blue-700"
+                        : "text-gray-500 group-hover:text-blue-600"
+                    }
+                  `}
+                />
+                {!isCollapsed && item.label}
+              </div>
+              {!isCollapsed &&
+                (isExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                ))}
             </div>
-            {isExpanded ? (
-              <ChevronDown className="w-4 h-4" />
-            ) : (
-              <ChevronRight className="w-4 h-4" />
-            )}
-          </div>
+          </Tooltip>
 
           {/* Submenu Items */}
-          {isExpanded && (
+          {isExpanded && !isCollapsed && (
             <ul className="ml-6 mt-2 space-y-1">
               {item.children.map((child) => {
                 const ChildIconComponent = child.icon;
@@ -137,30 +217,32 @@ export default function AppNavbar({
     // Regular menu item without children
     return (
       <li key={item.href}>
-        <Link
-          className={`
-            flex items-center p-3 text-sm font-medium rounded-lg transition-colors group
-            ${
-              isActive
-                ? "bg-blue-100 text-blue-700 border-r-4 border-blue-700"
-                : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
-            }
-          `}
-          href={item.href}
-          onClick={() => setSidebarOpen(false)}
-        >
-          <IconComponent
+        <Tooltip content={item.label} show={isCollapsed}>
+          <Link
             className={`
-              w-5 h-5 mr-3 transition-colors
+              flex items-center ${isCollapsed ? "justify-center" : ""} p-3 text-sm font-medium rounded-lg transition-colors group
               ${
                 isActive
-                  ? "text-blue-700"
-                  : "text-gray-500 group-hover:text-blue-600"
+                  ? "bg-blue-100 text-blue-700 border-r-4 border-blue-700"
+                  : "text-gray-700 hover:bg-gray-100 hover:text-blue-600"
               }
             `}
-          />
-          {item.label}
-        </Link>
+            href={item.href}
+            onClick={() => setSidebarOpen(false)}
+          >
+            <IconComponent
+              className={`
+                w-5 h-5 ${isCollapsed ? "" : "mr-3"} transition-colors
+                ${
+                  isActive
+                    ? "text-blue-700"
+                    : "text-gray-500 group-hover:text-blue-600"
+                }
+              `}
+            />
+            {!isCollapsed && item.label}
+          </Link>
+        </Tooltip>
       </li>
     );
   };
@@ -190,8 +272,10 @@ export default function AppNavbar({
                 </span>
               </Link>
 
-              {/* DateTime Widget - Pindah ke left side */}
-              <div className="hidden md:block ml-4 lg:ml-60">
+              {/* DateTime Widget - Adjust margin based on sidebar state */}
+              <div
+                className={`hidden md:block ml-4 transition-all duration-300 ${isCollapsed ? "lg:ml-20" : "lg:ml-60"}`}
+              >
                 <HeaderDateTimeWidget />
               </div>
             </div>
@@ -228,15 +312,21 @@ export default function AppNavbar({
                       <User className="w-4 h-4 mr-2" />
                       Profil
                     </Link>
-                    <Link
+                    {/* <Link
                       className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                       href={`${config.baseRoute}/settings`}
                       onClick={() => setIsProfileOpen(false)}
                     >
                       <Settings className="w-4 h-4 mr-2" />
                       Pengaturan
-                    </Link>
-                    <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                    </Link> */}
+                    <button
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setIsProfileOpen(false);
+                        logout();
+                      }}
+                    >
                       <LogOut className="w-4 h-4 mr-2" />
                       Keluar
                     </button>
@@ -259,34 +349,67 @@ export default function AppNavbar({
       {/* Sidebar */}
       <aside
         className={`
-        fixed top-0 left-0 z-40 w-64 h-screen pt-16 transition-transform duration-300 bg-white border-r border-gray-200 shadow-lg
+        fixed top-0 left-0 z-40 ${isCollapsed ? "w-16" : "w-64"} h-screen ${isCollapsed ? "pt-16" : "pt-2"}transition-all duration-300 bg-white border-r border-gray-200 shadow-lg
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0
       `}
       >
-        <div className="h-full px-3 pb-4 overflow-y-auto bg-white">
+        <div className="h-full px-3 pb-4 overflow-y-auto bg-white custom-scrollbar">
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-200 lg:border-none">
-            <Link className="flex items-center" href={config.dashboardRoute}>
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                <LogoIcon className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-semibold text-blue-600">
-                {config.fullTitle}
-              </span>
+          <div
+            className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"} p-4 border-b border-gray-200 lg:border-none`}
+          >
+            <Link
+              className={`flex items-center ${isCollapsed ? "justify-center" : ""}`}
+              href={config.dashboardRoute}
+            >
+              <Tooltip content={config.fullTitle} show={isCollapsed}>
+                <div
+                  className={`w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center ${isCollapsed ? "" : "mr-3"}`}
+                >
+                  <LogoIcon className="w-5 h-5 text-white" />
+                </div>
+              </Tooltip>
+              {!isCollapsed && (
+                <span className="text-xl font-semibold text-blue-600">
+                  {config.fullTitle}
+                </span>
+              )}
             </Link>
 
-            {/* Close button for mobile */}
-            <button
-              className="lg:hidden p-2 text-gray-500 rounded-lg hover:bg-gray-100"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="w-5 h-5" />
-            </button>
+            {!isCollapsed && (
+              <>
+                {/* Collapse button for desktop */}
+                <button
+                  className="hidden lg:block p-2 text-gray-500 rounded-lg hover:bg-gray-100"
+                  onClick={() => setIsCollapsed(true)}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+
+                {/* Close button for mobile */}
+                <button
+                  className="lg:hidden p-2 text-gray-500 rounded-lg hover:bg-gray-100"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </>
+            )}
+
+            {/* Expand button when collapsed */}
+            {isCollapsed && (
+              <button
+                className="hidden lg:block absolute top-4 left-12 p-2 text-gray-500 rounded-4xl hover:bg-gray-100"
+                onClick={() => setIsCollapsed(false)}
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
           </div>
 
           {/* Navigation Menu */}
-          <nav className="mt-6">
+          <nav className="mt-1">
             <ul className="space-y-2">
               {config.navigation.map((item) => renderMenuItem(item))}
             </ul>
@@ -294,17 +417,30 @@ export default function AppNavbar({
 
           {/* Sidebar Footer */}
           <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 bg-white">
-            <div className="flex items-center text-sm text-gray-600">
-              <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                <User className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="font-medium">{currentUser.name}</div>
-                <div className="text-xs text-gray-500">
-                  {currentUser.organization}
+            {isCollapsed ? (
+              <Tooltip
+                content={`${currentUser.name} - ${currentUser.organization}`}
+                show={isCollapsed}
+              >
+                <div className="flex justify-center">
+                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                    <User className="w-4 h-4" />
+                  </div>
+                </div>
+              </Tooltip>
+            ) : (
+              <div className="flex items-center text-sm text-gray-600">
+                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                  <User className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-medium">{currentUser.name}</div>
+                  <div className="text-xs text-gray-500">
+                    {currentUser.organization}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </aside>
