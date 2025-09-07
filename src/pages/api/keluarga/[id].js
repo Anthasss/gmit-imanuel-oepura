@@ -37,7 +37,31 @@ async function handleGet(req, res) {
             pendidikan: true,
             pekerjaan: true,
             pendapatan: true,
-            jaminanKesehatan: true
+            jaminanKesehatan: true,
+            pernikahan: {
+              include: {
+                klasis: true
+              }
+            },
+            baptiss: {
+              include: {
+                klasis: true
+              }
+            },
+            sidis: {
+              include: {
+                klasis: true
+              }
+            },
+            User: {
+              select: {
+                id: true,
+                username: true,
+                email: true,
+                noWhatsapp: true,
+                role: true
+              }
+            }
           }
         }
       }
