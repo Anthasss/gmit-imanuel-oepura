@@ -8,6 +8,7 @@ export default function RoleLayout({
   userInfo = null,
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -16,10 +17,16 @@ export default function RoleLayout({
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         userInfo={userInfo}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
       />
 
-      {/* Main content */}
-      <div className="lg:pl-64 pt-16">
+      {/* Main content - Responsive to sidebar collapse */}
+      <div
+        className={`transition-all duration-300 pt-16 ${
+          isCollapsed ? "lg:pl-16" : "lg:pl-64"
+        }`}
+      >
         <main className="min-h-screen">{children}</main>
         <AppFooter role={role} />
       </div>
