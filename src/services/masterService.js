@@ -470,7 +470,6 @@ const masterService = {
     return res.data;
   },
 
-
   // =================== KELURAHAN (Alias) ===================
   getKelurahan: async (params = {}) => {
     return masterService.getKelurahanDesa(params);
@@ -510,6 +509,76 @@ const masterService = {
 
   deleteRayon: async (id) => {
     const res = await axios.delete(`/rayon/${id}`);
+
+    return res.data;
+  },
+
+  // =================== KATEGORI JADWAL  ===================
+
+  getKategoriJadwal: async (params = {}) => {
+    const res = await axios.get("/kategori-jadwal", { params });
+
+    return res.data;
+  },
+
+  getKategoriJadwalById: async (id) => {
+    const res = await axios.get(`/kategori-jadwal/${id}`);
+
+    return res.data;
+  },
+
+  createKategoriJadwal: async (data) => {
+    const res = await axios.post("/kategori-jadwal", data);
+
+    return res.data;
+  },
+
+  updateKategoriJadwal: async (id, data) => {
+    const res = await axios.patch(`/kategori-jadwal/${id}`, data);
+
+    return res.data;
+  },
+
+  getKategoriJadwalById: async (id) => {
+    const res = await axios.get(`/kategori-jadwal/${id}`);
+
+    return res.data;
+  },
+
+  deleteKategoriJadwal: async (id) => {
+    const res = await axios.delete(`/kategori-jadwal/${id}`);
+
+    return res.data;
+  },
+
+  // =================== JENIS JABATAN  ===================
+
+  getJenisJabatan: async (params = {}) => {
+    const res = await axios.get("/jenis-jabatan", { params });
+
+    return res.data;
+  },
+
+  getJenisJabatanById: async (id) => {
+    const res = await axios.get(`/jenis-jabatan/${id}`);
+
+    return res.data;
+  },
+
+  createJenisJabatan: async (data) => {
+    const res = await axios.post("/jenis-jabatan", data);
+
+    return res.data;
+  },
+
+  updateJenisJabatan: async (id, data) => {
+    const res = await axios.patch(`/jenis-jabatan/${id}`, data);
+
+    return res.data;
+  },
+
+  deleteJenisJabatan: async (id) => {
+    const res = await axios.delete(`/jenis-jabatan/${id}`);
 
     return res.data;
   },
