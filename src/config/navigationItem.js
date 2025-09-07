@@ -25,6 +25,11 @@ import {
   UserPlus,
   Users,
   UsersRound,
+  Baby,
+  GraduationCap,
+  Crown,
+  Church,
+  MoreHorizontal,
 } from "lucide-react";
 
 // Role-based configurations
@@ -44,11 +49,27 @@ export const roleConfigs = {
     },
     navigation: [
       { href: "/admin/dashboard", label: "Dashboard", icon: Home },
-      { href: "/admin/user", label: "Kelola Akun", icon: Users },
+      { href: "/admin/users", label: "Kelola Akun", icon: Users },
       { href: "/admin/jemaat", label: "Jemaat", icon: Users },
+      { href: "/admin/majelis", label: "Majelis", icon: UserCheck },
       { href: "/admin/kegiatan", label: "Kegiatan", icon: Calendar },
       { href: "/admin/keluarga", label: "Keluarga", icon: UsersRound },
       { href: "/admin/rayon", label: "Rayon", icon: MapPin },
+      {
+        href: "/admin/sidi",
+        label: "Sidi",
+        icon: GraduationCap,
+      },
+      {
+        href: "/admin/baptis",
+        label: "Baptis",
+        icon: Baby,
+      },
+      {
+        href: "/admin/pernikahan",
+        label: "Pernikahan",
+        icon: Heart,
+      },
       { href: "/admin/keuangan", label: "Keuangan", icon: DollarSign },
       { href: "/admin/laporan", label: "Laporan", icon: FileText },
       {
@@ -66,6 +87,18 @@ export const roleConfigs = {
             label: "Status Keluarga",
             icon: MapPin,
           },
+
+          {
+            href: "/admin/data-master/jenis-ibadah",
+            label: "Jenis Ibadah",
+            icon: MapPin,
+          },
+          {
+            href: "/admin/data-master/klasis",
+            label: "Klasis",
+            icon: Church,
+          },
+
           {
             href: "/admin/data-master/keadaan-rumah",
             label: "Keadaan Rumah",
@@ -85,6 +118,16 @@ export const roleConfigs = {
             href: "/admin/data-master/suku",
             label: "Suku",
             icon: Tag,
+          },
+          {
+            href: "/admin/data-master/kategori-jadwal",
+            label: "Kategori Jadwal",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/jenis-jabatan",
+            label: "Jenis Jabatan",
+            icon: Crown,
           },
           {
             href: "/admin/data-master/pekerjaan",
@@ -109,7 +152,7 @@ export const roleConfigs = {
         ],
       },
       { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
-      { href: "/admin/settings", label: "Pengaturan", icon: Settings },
+      // { href: "/admin/settings", label: "Pengaturan", icon: Settings },
     ],
     footerLinks: [
       { href: "/admin/dashboard", label: "Dashboard" },
@@ -135,11 +178,11 @@ export const roleConfigs = {
     navigation: [
       { href: "/jemaat/dashboard", label: "Beranda", icon: Home },
       { href: "/jemaat/profile", label: "Profil Saya", icon: UserCheck },
-      { href: "/jemaat/events", label: "Kegiatan", icon: Calendar },
-      { href: "/jemaat/offering", label: "Persembahan", icon: DollarSign },
-      { href: "/jemaat/attendance", label: "Kehadiran", icon: CheckSquare },
-      { href: "/jemaat/prayer", label: "Doa", icon: Heart },
-      { href: "/jemaat/news", label: "Berita", icon: Bell },
+      { href: "/jemaat/jadwal-ibadah", label: "Jadwal Ibadah", icon: Calendar },
+      { href: "/jemaat/keluarga", label: "Keluarga", icon: DollarSign },
+      // { href: "/jemaat/attendance", label: "Kehadiran", icon: CheckSquare },
+      // { href: "/jemaat/prayer", label: "Doa", icon: Heart },
+      // { href: "/jemaat/news", label: "Berita", icon: Bell },
     ],
     footerLinks: [
       { href: "/jemaat/dashboard", label: "Beranda" },
@@ -164,16 +207,26 @@ export const roleConfigs = {
     },
     navigation: [
       { href: "/majelis/dashboard", label: "Dashboard", icon: Home },
-      { href: "/majelis/oversight", label: "Pengawasan", icon: Activity },
-      { href: "/majelis/meetings", label: "Rapat", icon: Users },
-      { href: "/majelis/decisions", label: "Keputusan", icon: ClipboardList },
-      { href: "/majelis/programs", label: "Program", icon: BookOpen },
-      { href: "/majelis/reports", label: "Laporan", icon: FileText },
       {
-        href: "/majelis/communications",
-        label: "Komunikasi",
-        icon: MessageSquare,
+        href: "/majelis/jadwal-ibadah",
+        label: "Jadwal Ibadah",
+        icon: Calendar,
       },
+      {
+        href: "/majelis/keluarga",
+        label: "Data Keluarga",
+        icon: UsersRound,
+      },
+      {
+        href: "/majelis/pengumuman-rayon",
+        label: "Pengumuman Rayon",
+        icon: Bell,
+      },
+
+      // { href: "/majelis/meetings", label: "Rapat", icon: Users },
+      // { href: "/majelis/decisions", label: "Keputusan", icon: ClipboardList },
+      // { href: "/majelis/programs", label: "Program", icon: BookOpen },
+      // { href: "/majelis/reports", label: "Laporan", icon: FileText },
     ],
     footerLinks: [
       { href: "/majelis/dashboard", label: "Dashboard" },
@@ -198,12 +251,31 @@ export const roleConfigs = {
     },
     navigation: [
       { href: "/employee/dashboard", label: "Dashboard", icon: Home },
-      { href: "/employee/tasks", label: "Tugas", icon: CheckSquare },
-      { href: "/employee/schedule", label: "Jadwal", icon: Calendar },
-      { href: "/employee/services", label: "Pelayanan", icon: Heart },
-      { href: "/employee/attendance", label: "Absensi", icon: UserCheck },
-      { href: "/employee/reports", label: "Laporan", icon: FileText },
-      { href: "/employee/communication", label: "Komunikasi", icon: Mail },
+      {
+        href: "/employee/kegiatan-gereja",
+        label: "Kegiatan Gereja",
+        icon: Calendar,
+      },
+      { href: "/employee/pengumuman", label: "Pengumuman", icon: Heart },
+      {
+        href: "/employee/lainnya",
+        label: "Lainnya",
+        icon: MoreHorizontal,
+        children: [
+          {
+            href: "/employee/lainnya/baptis",
+            label: "Baptis",
+            icon: Users,
+          },
+          {
+            href: "/employee/lainnya/sidi",
+            label: "Sidi",
+            icon: ClipboardList,
+          },
+          { href: "/employee/lainnya/pernikahan", label: "Pernikahan", icon: Heart },
+          { href: "/employee/lainnya/atestasi", label: "Atestasi", icon: FileText },
+        ],
+      },
     ],
     footerLinks: [
       { href: "/employee/dashboard", label: "Dashboard" },
