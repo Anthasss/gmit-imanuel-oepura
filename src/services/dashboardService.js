@@ -115,48 +115,83 @@ class DashboardService {
 
   async getUpcomingEvents() {
     try {
-      // Since we don't have a specific events table in schema, 
-      // we'll create mock upcoming events based on worship schedules
-      const currentDate = new Date();
-      const nextWeek = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      // Fetch real worship schedule data from API
+      const response = await fetch(`${this.baseURL}/public/jadwal-ibadah?limit=50&upcoming=true`, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to fetch worship schedules');
+      }
 
-      // Mock upcoming events based on common church activities
-      const upcomingEvents = [
-        {
-          id: 1,
-          title: "Ibadah Minggu",
-          date: this.getNextSunday(),
-          time: "08:00",
-          type: "worship",
-        },
-        {
-          id: 2,
-          title: "Persekutuan Remaja",
-          date: this.getNextDay(6), // Saturday
-          time: "19:00",
-          type: "fellowship",
-        },
-        {
-          id: 3,
-          title: "Doa Pagi",
-          date: this.getNextWeekday(),
-          time: "06:00",
-          type: "prayer",
-        },
-        {
-          id: 4,
-          title: "Persekutuan Wanita",
-          date: this.getNextDay(3), // Wednesday
-          time: "14:00",
-          type: "fellowship",
-        }
-      ];
-
-      return upcomingEvents.filter(event => new Date(event.date) <= nextWeek);
+      // Transform the API response to match the expected format
+      return result.data.schedules.map(schedule => ({
+        id: schedule.id,
+        title: schedule.title,
+        date: schedule.rawDate ? new Date(schedule.rawDate).toLocaleDateString('id-ID', {
+          weekday: 'long',
+          day: 'numeric', 
+          month: 'short'
+        }) : schedule.date,
+        time: schedule.time,
+        type: schedule.jenisIbadah.toLowerCase().includes('ibadah') ? 'worship' : 
+              schedule.jenisIbadah.toLowerCase().includes('persekutuan') ? 'fellowship' :
+              schedule.jenisIbadah.toLowerCase().includes('doa') ? 'prayer' : 'worship',
+        location: schedule.location,
+        speaker: schedule.speaker,
+        tema: schedule.tema,
+        firman: schedule.firman,
+        kategori: schedule.kategori,
+        rayon: schedule.rayon
+      }));
     } catch (error) {
       console.error('Upcoming Events Service Error:', error);
-      return [];
+      // Fallback to mock data if API fails
+      return this.getMockUpcomingEvents();
     }
+  }
+
+  // Fallback method with mock data
+  getMockUpcomingEvents() {
+    const upcomingEvents = [
+      {
+        id: 1,
+        title: "Ibadah Minggu",
+        date: this.getNextSunday(),
+        time: "08:00",
+        type: "worship",
+        location: "Gereja",
+        speaker: "Pendeta"
+      },
+      {
+        id: 2,
+        title: "Persekutuan Remaja", 
+        date: this.getNextDay(6),
+        time: "19:00",
+        type: "fellowship",
+        location: "Aula Gereja",
+        speaker: "Majelis Remaja"
+      },
+      {
+        id: 3,
+        title: "Doa Pagi",
+        date: this.getNextWeekday(),
+        time: "06:00", 
+        type: "prayer",
+        location: "Gereja",
+        speaker: "Majelis"
+      }
+    ];
+    
+    return upcomingEvents;
   }
 
   // Helper methods for date calculations
