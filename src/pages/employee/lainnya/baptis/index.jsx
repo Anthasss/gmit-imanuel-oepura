@@ -28,7 +28,7 @@ const baptisFields = [
     label: "Pilih Jemaat",
     placeholder: "Pilih jemaat untuk baptis",
     required: true,
-    apiEndpoint: "/api/jemaat/options",
+    apiEndpoint: "/jemaat/options",
   },
   {
     type: "date",
@@ -42,7 +42,7 @@ const baptisFields = [
     label: "Klasis",
     placeholder: "Pilih klasis",
     required: true,
-    apiEndpoint: "/api/klasis/options",
+    apiEndpoint: "/klasis/options",
   },
   {
     type: "textarea",
