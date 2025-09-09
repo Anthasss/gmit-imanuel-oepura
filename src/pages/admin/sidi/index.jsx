@@ -10,6 +10,7 @@ import {
   User,
   MapPin,
   GraduationCap,
+  Pen,
 } from "lucide-react";
 
 import sidiService from "@/services/sidiService";
@@ -27,7 +28,7 @@ const sidiFields = [
     label: "Pilih Jemaat",
     placeholder: "Pilih jemaat untuk sidi",
     required: true,
-    apiEndpoint: "/api/jemaat/options",
+    apiEndpoint: "/jemaat/options",
   },
   {
     type: "datepicker",
@@ -42,7 +43,7 @@ const sidiFields = [
     label: "Klasis",
     placeholder: "Pilih klasis",
     required: true,
-    apiEndpoint: "/api/klasis/options",
+    apiEndpoint: "/klasis/options",
   },
   {
     type: "textarea",
@@ -257,7 +258,7 @@ export default function SidiPage() {
         rowActionType="horizontal"
         rowActions={[
           {
-            icon: Eye,
+            icon: Pen,
             onClick: (item) => modal.open(item),
             variant: "outline",
             tooltip: "Edit data sidi",
