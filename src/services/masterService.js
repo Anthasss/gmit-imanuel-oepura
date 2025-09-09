@@ -582,6 +582,76 @@ const masterService = {
 
     return res.data;
   },
+
+  // =================== KATEGORI PENGUMUMAN ===================
+
+  getKategoriPengumuman: async (params = {}) => {
+    const res = await axios.get("/kategori-pengumuman", { params });
+
+    return res.data;
+  },
+
+  getKategoriPengumumanById: async (id) => {
+    const res = await axios.get(`/kategori-pengumuman/${id}`);
+
+    return res.data;
+  },
+
+  createKategoriPengumuman: async (data) => {
+    const res = await axios.post("/kategori-pengumuman", data);
+
+    return res.data;
+  },
+
+  updateKategoriPengumuman: async (id, data) => {
+    const res = await axios.patch(`/kategori-pengumuman/${id}`, data);
+
+    return res.data;
+  },
+
+  deleteKategoriPengumuman: async (id) => {
+    const res = await axios.delete(`/kategori-pengumuman/${id}`);
+
+    return res.data;
+  },
+
+  // =================== JENIS PENGUMUMAN ===================
+
+  getJenisPengumuman: async (params = {}) => {
+    const res = await axios.get("/jenis-pengumuman", { params });
+
+    return res.data;
+  },
+
+  getJenisPengumumanById: async (id) => {
+    const res = await axios.get(`/jenis-pengumuman/${id}`);
+
+    return res.data;
+  },
+
+  getJenisPengumumanOptions: async (params = {}) => {
+    const res = await axios.get("/jenis-pengumuman/options", { params });
+
+    return res.data;
+  },
+
+  createJenisPengumuman: async (data) => {
+    const res = await axios.post("/jenis-pengumuman", data);
+
+    return res.data;
+  },
+
+  updateJenisPengumuman: async (id, data) => {
+    const res = await axios.patch(`/jenis-pengumuman/${id}`, data);
+
+    return res.data;
+  },
+
+  deleteJenisPengumuman: async (id) => {
+    const res = await axios.delete(`/jenis-pengumuman/${id}`);
+
+    return res.data;
+  },
 };
 
 export default masterService;
