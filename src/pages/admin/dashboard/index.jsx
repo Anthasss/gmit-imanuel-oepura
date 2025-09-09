@@ -88,12 +88,12 @@ export default function DashboardPageAdmin() {
       changeType: "neutral",
     },
     {
-      label: "Acara Mendatang",
+      label: "Jadwal Ibadah",
       value: upcomingEvents.length,
       icon: Calendar,
       iconBg: "bg-purple-100",
       iconColor: "text-purple-600",
-      change: "Minggu ini",
+      change: "Mendatang",
       changeType: "neutral",
     },
     {
@@ -242,31 +242,73 @@ export default function DashboardPageAdmin() {
           {/* Upcoming Events */}
           <Card>
             <CardHeader>
-              <CardTitle>Acara Mendatang</CardTitle>
+              <CardTitle>Jadwal Ibadah</CardTitle>
               <CardDescription>
-                Jadwal kegiatan gereja minggu ini
+                Jadwal ibadah dan kegiatan gereja mendatang
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {upcomingEvents.map((event) => (
+              <div className="max-h-96 overflow-y-auto space-y-3">
+                {upcomingEvents.length > 0 ? upcomingEvents.map((event) => (
                   <div
                     key={event.id}
-                    className="flex items-center justify-between p-4 border rounded-lg"
+                    className="p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                   >
-                    <div>
-                      <p className="font-medium">{event.title}</p>
-                      <p className="text-sm text-gray-500">
-                        {event.date} • {event.time}
-                      </p>
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm">{event.title}</h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {event.date} • {event.time}
+                        </p>
+                        {event.location && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            📍 {event.location}
+                          </p>
+                        )}
+                        {event.speaker && event.speaker !== 'Belum ditentukan' && (
+                          <p className="text-xs text-gray-600">
+                            👤 {event.speaker}
+                          </p>
+                        )}
+                        {event.tema && (
+                          <p className="text-xs text-blue-600 font-medium mt-1">
+                            {event.tema}
+                          </p>
+                        )}
+                        {event.firman && (
+                          <p className="text-xs text-green-600">
+                            📖 {event.firman}
+                          </p>
+                        )}
+                        {event.rayon && (
+                          <p className="text-xs text-purple-600">
+                            🏘️ Rayon {event.rayon}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        {getEventTypeBadge(event.type)}
+                        {event.kategori && (
+                          <Badge variant="outline" className="text-xs">
+                            {event.kategori}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                    {getEventTypeBadge(event.type)}
                   </div>
-                ))}
+                )) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">Tidak ada jadwal ibadah mendatang</p>
+                    <p className="text-xs mt-1">Hubungi administrator untuk menambah jadwal</p>
+                  </div>
+                )}
               </div>
-              <div className="mt-4">
-                <Button variant="outline" className="w-full">
+              <div className="mt-4 flex gap-2">
+                <Button variant="outline" className="flex-1">
                   Kelola Jadwal
+                </Button>
+                <Button variant="outline" size="sm">
+                  Lihat Semua
                 </Button>
               </div>
             </CardContent>
