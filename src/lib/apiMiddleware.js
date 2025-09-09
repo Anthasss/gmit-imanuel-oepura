@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import { verifyToken } from './jwt';
 
 // Middleware untuk endpoint public - tidak perlu autentikasi
 export function publicEndpoint(handler) {
@@ -38,7 +39,14 @@ export function privateEndpoint(handler, allowedRoles = []) {
       }
 
       // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = verifyToken(token);
+      
+      if (!decoded) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Access denied. Invalid token.' 
+        });
+      }
       
       // Check role jika ada batasan role
       if (allowedRoles.length > 0 && !allowedRoles.includes(decoded.role)) {
@@ -53,6 +61,7 @@ export function privateEndpoint(handler, allowedRoles = []) {
       
       return handler(req, res);
     } catch (error) {
+      console.error('JWT verification error:', error);
       return res.status(401).json({ 
         success: false, 
         message: 'Access denied. Invalid token.' 
