@@ -1,15 +1,52 @@
 import ListGrid from "@/components/ui/ListGrid";
 import keluargaService from "@/services/keluargaService";
-import { useQuery } from "@tanstack/react-query";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Edit, Eye, Trash2, Users } from "lucide-react";
+import { showToast } from "@/utils/showToast";
+import useConfirm from "@/hooks/useConfirm";
 
 export default function KeluargaPage() {
-  const { data, isLoading, error } = useQuery({
+  const confirm = useConfirm();
+  
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["keluarga"],
     queryFn: () => keluargaService.getAll(),
     staleTime: 5 * 60 * 1000, // 5 minutes
     keepPreviousData: true,
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => keluargaService.delete(id),
+    onSuccess: () => {
+      showToast({
+        title: "Berhasil",
+        description: "Data keluarga berhasil dihapus",
+        color: "success",
+      });
+      refetch();
+    },
+    onError: (error) => {
+      showToast({
+        title: "Gagal",
+        description: "Gagal menghapus data keluarga",
+        color: "error",
+      });
+    },
+  });
+
+  const handleDelete = (row) => {
+    confirm.showConfirm({
+      title: "Hapus Keluarga",
+      message: `Apakah Anda yakin ingin menghapus keluarga dengan No. Bangunan ${row.noBagungan}? Data yang sudah dihapus tidak dapat dikembalikan.`,
+      confirmText: "Ya, Hapus",
+      cancelText: "Batal",
+      variant: "danger",
+      onConfirm: () => {
+        deleteMutation.mutate(row.id);
+      },
+    });
+  };
 
   const columns = [
     {
@@ -176,16 +213,7 @@ export default function KeluargaPage() {
           {
             label: "Hapus",
             icon: Trash2,
-            onClick: (row) => {
-              if (
-                confirm(
-                  `Apakah Anda yakin ingin menghapus keluarga dengan No. Bangunan ${row.noBagungan}?`
-                )
-              ) {
-                // Handle delete logic here
-                console.log("Delete keluarga:", row.id);
-              }
-            },
+            onClick: handleDelete,
             variant: "danger",
           },
         ]}
@@ -201,6 +229,17 @@ export default function KeluargaPage() {
         error={error}
         searchable={true}
         searchPlaceholder="Cari berdasarkan alamat, kepala keluarga..."
+      />
+      
+      <ConfirmDialog
+        isOpen={confirm.isOpen}
+        onClose={confirm.hideConfirm}
+        onConfirm={confirm.handleConfirm}
+        title={confirm.config.title}
+        message={confirm.config.message}
+        confirmText={confirm.config.confirmText}
+        cancelText={confirm.config.cancelText}
+        variant={confirm.config.variant}
       />
     </>
   );
