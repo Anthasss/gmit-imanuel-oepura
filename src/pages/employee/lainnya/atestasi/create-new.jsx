@@ -41,7 +41,11 @@ export default function CreateAtestasiPage() {
       const response = await atestasiService.create(data);
 
       if (response.success) {
-        showToast.success("Data atestasi berhasil dibuat!");
+        showToast({
+          title: "Berhasil",
+          description: "Data atestasi berhasil dibuat!",
+          color: "success"
+        });
 
         // Jika tipe MASUK, tanyakan apakah ingin create jemaat
         if (data.tipe === "MASUK") {
@@ -64,9 +68,11 @@ export default function CreateAtestasiPage() {
         }
       }
     } catch (error) {
-      showToast.error(
-        error.response?.data?.message || "Gagal membuat data atestasi"
-      );
+      showToast({
+        title: "Gagal",
+        description: error.response?.data?.message || "Gagal membuat data atestasi",
+        color: "error"
+      });
     } finally {
       setIsSubmitting(false);
     }
