@@ -12,11 +12,17 @@ export default function CreateModal({
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
 
+  // Handle both array and function fields
+  const getFields = () => {
+    return typeof fields === 'function' ? fields(formData) : fields;
+  };
+
   useEffect(() => {
     if (isOpen) {
       // Initialize form with default values
+      const currentFields = getFields();
       const initialData = {};
-      fields.forEach(field => {
+      currentFields.forEach(field => {
         if (field.defaultValue !== undefined) {
           initialData[field.key] = field.defaultValue;
         } else if (field.type === 'boolean') {
@@ -30,14 +36,15 @@ export default function CreateModal({
       setFormData(initialData);
       setErrors({});
     }
-  }, [isOpen, fields]);
+  }, [isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
     // Basic validation
     const newErrors = {};
-    fields.forEach(field => {
+    const currentFields = getFields();
+    currentFields.forEach(field => {
       if (field.required && (!formData[field.key] || formData[field.key].toString().trim() === '')) {
         newErrors[field.key] = `${field.label} wajib diisi`;
       }
@@ -52,7 +59,16 @@ export default function CreateModal({
   };
 
   const handleInputChange = (key, value) => {
-    setFormData(prev => ({ ...prev, [key]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [key]: value };
+      
+      // Clear dependent fields when kategori changes
+      if (key === 'kategoriId') {
+        newData.parentId = '';
+      }
+      
+      return newData;
+    });
     if (errors[key]) {
       setErrors(prev => ({ ...prev, [key]: undefined }));
     }
@@ -81,7 +97,7 @@ export default function CreateModal({
           <form onSubmit={handleSubmit}>
             <div className="p-4">
               <div className="space-y-4">
-                {fields.map((field) => (
+                {getFields().map((field) => (
                   <div key={field.key}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {field.label}
@@ -140,6 +156,10 @@ export default function CreateModal({
                         placeholder={field.placeholder}
                         disabled={isLoading}
                       />
+                    )}
+                    
+                    {field.description && (
+                      <p className="text-gray-500 text-xs mt-1">{field.description}</p>
                     )}
                     
                     {errors[field.key] && (
