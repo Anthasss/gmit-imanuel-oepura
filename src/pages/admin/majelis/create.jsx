@@ -213,7 +213,7 @@ export default function CreateMajelisPage() {
                 label="Jenis Jabatan"
                 name="jenisJabatanId"
                 placeholder="Pilih jenis jabatan"
-                apiEndpoint="/api/jenis-jabatan/options"
+                apiEndpoint="/jenis-jabatan/options"
                 required
                 leftIcon={<Crown className="w-4 h-4" />}
               />
@@ -222,7 +222,7 @@ export default function CreateMajelisPage() {
                 label="Rayon"
                 name="idRayon"
                 placeholder="Pilih rayon (opsional)"
-                apiEndpoint="/api/rayon/options"
+                apiEndpoint="/rayon/options"
                 leftIcon={<MapPin className="w-4 h-4" />}
               />
 
