@@ -14,19 +14,34 @@ import {
 } from "lucide-react";
 
 import majelisService from "@/services/majelisService";
+import masterService from "@/services/masterService";
+import { majelisEditSchema } from "@/validations/masterSchema";
 import ListGrid from "@/components/ui/ListGrid";
+import CreateOrEditModal from "@/components/common/CreateOrEditModal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import useConfirm from "@/hooks/useConfirm";
+import useModalForm from "@/hooks/useModalForm";
 
 export default function MajelisPage() {
   const router = useRouter();
   const confirm = useConfirm();
+  const modal = useModalForm();
   const [viewData, setViewData] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["majelis"],
     queryFn: () => majelisService.getAll(),
+  });
+
+  const { data: rayonData } = useQuery({
+    queryKey: ["rayon"],
+    queryFn: () => masterService.getRayon(),
+  });
+
+  const { data: jenisJabatanData } = useQuery({
+    queryKey: ["jenis-jabatan"],
+    queryFn: () => masterService.getJenisJabatan(),
   });
 
   const columns = [
@@ -141,6 +156,18 @@ export default function MajelisPage() {
     router.push("/admin/majelis/create");
   };
 
+  const handleEditSuccess = () => {
+    refetch();
+    modal.close();
+  };
+
+  const handleEditSubmit = async (formData, isEdit) => {
+    if (isEdit) {
+      return await majelisService.update(modal.editData.id, formData);
+    }
+    return { success: false };
+  };
+
   return (
     <>
       <ListGrid
@@ -156,7 +183,7 @@ export default function MajelisPage() {
         rowActions={[
           {
             icon: Pen,
-            onClick: (item) => router.push(`/admin/majelis/edit/${item.id}`),
+            onClick: (item) => modal.open(item),
             variant: "outline",
             tooltip: "Edit majelis",
           },
@@ -181,6 +208,66 @@ export default function MajelisPage() {
           icon: <UserPlus className="w-4 h-4 mr-2" />,
           text: "Tambah Majelis + Akun",
         }}
+      />
+
+      <CreateOrEditModal
+        defaultValues={{
+          namaLengkap: "",
+          mulai: "",
+          selesai: "",
+          idRayon: "",
+          jenisJabatanId: "",
+        }}
+        editData={modal.editData}
+        fields={[
+          {
+            type: "text",
+            name: "namaLengkap",
+            label: "Nama Lengkap",
+            placeholder: "Masukkan nama lengkap majelis",
+            required: true,
+          },
+          {
+            type: "date",
+            name: "mulai",
+            label: "Tanggal Mulai",
+            placeholder: "Pilih tanggal mulai",
+            required: true,
+          },
+          {
+            type: "date",
+            name: "selesai",
+            label: "Tanggal Selesai",
+            placeholder: "Pilih tanggal selesai (opsional)",
+          },
+          {
+            type: "select",
+            name: "idRayon",
+            label: "Rayon",
+            placeholder: "Pilih rayon (opsional)",
+            options: rayonData?.data?.items?.map((item) => ({
+              value: item.id,
+              label: item.namaRayon,
+            })) || [],
+          },
+          {
+            type: "select",
+            name: "jenisJabatanId",
+            label: "Jenis Jabatan",
+            placeholder: "Pilih jenis jabatan",
+            required: true,
+            options: jenisJabatanData?.data?.items?.map((item) => ({
+              value: item.id,
+              label: item.namaJabatan,
+            })) || [],
+          },
+        ]}
+        isOpen={modal.isOpen}
+        schema={majelisEditSchema}
+        title="Edit Majelis"
+        onClose={modal.close}
+        onSubmit={handleEditSubmit}
+        onSuccess={handleEditSuccess}
       />
 
       <ConfirmDialog
