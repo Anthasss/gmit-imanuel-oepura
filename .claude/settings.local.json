@@ -45,7 +45,15 @@
       "Read(/D:\\code-3\\gmit-imanuel-oepura\\prisma/**)",
       "Read(/D:\\code-3\\gmit-imanuel-oepura\\prisma/**)",
       "Bash(npx prisma:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(pkill:*)",
+      "Bash(taskkill:*)",
+      "Bash(PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION=\"ya\" npx prisma migrate reset --force)",
+      "Bash(TASKKILL /F /PID 36036)",
+      "Bash(kill:*)",
+      "Bash(TASKKILL /F /PID 13568)",
+      "Bash(cmd.exe /c \"taskkill /F /PID 13568\")"
     ],
     "deny": [],
     "ask": []
