@@ -130,3 +130,40 @@ export const majelisCreationSchema = z.object({
   password: z.string().min(6, "Password minimal 6 karakter"),
   noWhatsapp: z.string().optional(),
 });
+
+// Majelis Edit Schema (without user account data)
+export const majelisEditSchema = z.object({
+  namaLengkap: z.string().min(2, "Nama lengkap wajib diisi"),
+  mulai: z.string().nonempty("Tanggal mulai wajib diisi"),
+  selesai: z.string().optional(),
+  idRayon: z.string().optional(),
+  jenisJabatanId: z.string().nonempty("Jenis jabatan wajib dipilih"),
+});
+
+// Keluarga Edit Schema
+export const keluargaEditSchema = z.object({
+  noBagungan: z.string().min(1, "No. Bangunan wajib diisi"),
+  idRayon: z.string().nonempty("Rayon wajib dipilih"),
+  idStatusKeluarga: z.string().optional(),
+  idStatusKepemilikanRumah: z.string().optional(),
+  idKeadaanRumah: z.string().optional(),
+});
+
+// Kategori Pengumuman Schema
+export const kategoriPengumumanSchema = z.object({
+  nama: z.string()
+    .min(2, "Nama kategori wajib diisi")
+    .max(100, "Nama maksimal 100 karakter"),
+  deskripsi: z.string().optional(),
+  isActive: z.boolean().default(true),
+});
+
+// Jenis Pengumuman Schema
+export const jenisPengumumanSchema = z.object({
+  kategoriId: z.string().nonempty("Kategori pengumuman wajib dipilih"),
+  nama: z.string()
+    .min(2, "Nama jenis wajib diisi")
+    .max(150, "Nama maksimal 150 karakter"),
+  deskripsi: z.string().optional(),
+  isActive: z.boolean().default(true),
+});
