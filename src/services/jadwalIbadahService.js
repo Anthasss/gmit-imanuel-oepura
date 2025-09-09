@@ -35,7 +35,7 @@ export const jadwalIbadahService = {
       longitude: data.longitude ? parseFloat(data.longitude) : null,
     };
     
-    const response = await axios.put(`/jadwal-ibadah/${id}`, transformedData);
+    const response = await axios.patch(`/jadwal-ibadah/${id}`, transformedData);
     return response.data;
   },
 
