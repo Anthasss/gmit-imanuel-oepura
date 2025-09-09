@@ -184,7 +184,7 @@ export default function MajelisProfileSection({ user }) {
                 <AutoCompleteInput
                   name="jenisJabatanId"
                   label="Jenis Jabatan"
-                  apiEndpoint="/api/jenis-jabatan/options"
+                  apiEndpoint="/jenis-jabatan/options"
                   placeholder="Pilih jenis jabatan"
                 />
                 
@@ -204,7 +204,7 @@ export default function MajelisProfileSection({ user }) {
                 <AutoCompleteInput
                   name="idRayon"
                   label="Rayon"
-                  apiEndpoint="/api/rayon/options"
+                  apiEndpoint="/rayon/options"
                   placeholder="Pilih rayon"
                 />
               </div>
