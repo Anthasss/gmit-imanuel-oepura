@@ -13,6 +13,7 @@ import {
   FileText,
   Heart,
   Home,
+  List,
   Mail,
   Map,
   MapPin,
@@ -30,6 +31,7 @@ import {
   Crown,
   Church,
   MoreHorizontal,
+  Image,
 } from "lucide-react";
 
 // Role-based configurations
@@ -149,6 +151,38 @@ export const roleConfigs = {
             label: "Jaminan Kesehatan",
             icon: Tag,
           },
+          {
+            href: "/admin/data-master/kategori-pengumuman",
+            label: "Kategori Pengumuman",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/jenis-pengumuman",
+            label: "Jenis Pengumuman",
+            icon: Tag,
+          },
+        ],
+      },
+      {
+        href: "/admin/data-master-keuangan",
+        label: "Data Master Keuangan",
+        icon: DollarSign,
+        children: [
+          {
+            href: "/admin/data-master/keuangan/kategori",
+            label: "Kategori Keuangan",
+            icon: Tag,
+          },
+          {
+            href: "/admin/data-master/keuangan/item",
+            label: "Item Keuangan",
+            icon: List,
+          },
+          {
+            href: "/admin/data-master/keuangan/periode",
+            label: "Periode Anggaran",
+            icon: Calendar,
+          },
         ],
       },
       { href: "/admin/analytics", label: "Analitik", icon: BarChart3 },
@@ -218,8 +252,8 @@ export const roleConfigs = {
         icon: UsersRound,
       },
       {
-        href: "/majelis/pengumuman-rayon",
-        label: "Pengumuman Rayon",
+        href: "/majelis/pengumuman",
+        label: "Pengumuman",
         icon: Bell,
       },
 
@@ -272,9 +306,22 @@ export const roleConfigs = {
             label: "Sidi",
             icon: ClipboardList,
           },
-          { href: "/employee/lainnya/pernikahan", label: "Pernikahan", icon: Heart },
-          { href: "/employee/lainnya/atestasi", label: "Atestasi", icon: FileText },
+          {
+            href: "/employee/lainnya/pernikahan",
+            label: "Pernikahan",
+            icon: Heart,
+          },
+          {
+            href: "/employee/lainnya/atestasi",
+            label: "Atestasi",
+            icon: FileText,
+          },
         ],
+      },
+      {
+        href: "/employee/galeri",
+        label: "Galeri",
+        icon: Image,
       },
     ],
     footerLinks: [
