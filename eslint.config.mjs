@@ -8,7 +8,6 @@ import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import _import from "eslint-plugin-import";
-import unusedImports from "eslint-plugin-unused-imports";
 import prettier from "eslint-plugin-prettier";
 import globals from "globals";
 
@@ -51,7 +50,6 @@ export default defineConfig([
       "react-hooks": reactHooks,
       "jsx-a11y": jsxA11y,
       import: _import,
-      "unused-imports": unusedImports,
       prettier,
     },
 
@@ -88,8 +86,8 @@ export default defineConfig([
       "prettier/prettier": ["warn", { endOfLine: "auto" }],
 
       "no-unused-vars": "off",
-      "unused-imports/no-unused-vars": "off",
-      "unused-imports/no-unused-imports": "warn",
+      "react/jsx-uses-react": "error",
+      "react/jsx-uses-vars": "error",
       "no-undef": "error",
       "react/jsx-no-undef": ["error", { allowGlobals: false }],
 

@@ -41,6 +41,7 @@ async function handleGet(req, res) {
       limit = 100, // Increase default limit untuk tree view
       search,
       kategoriId,
+      periodeId, // TAMBAH: Filter berdasarkan periode
       parentId,
       level,
       includeTree = false,
@@ -48,6 +49,11 @@ async function handleGet(req, res) {
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const where = { isActive: true }; // Only get active items
+
+    // Filter berdasarkan periode jika disediakan
+    if (periodeId && periodeId !== "" && periodeId !== "all") {
+      where.periodeId = periodeId;
+    }
 
     // Build where conditions
     if (search) {
@@ -96,8 +102,6 @@ async function handleGet(req, res) {
           _count: {
             select: {
               children: true,
-              transaksiPenerimaan: true,
-              transaksiPengeluaran: true,
             },
           },
         },
@@ -153,36 +157,48 @@ async function handlePost(req, res) {
   try {
     const {
       kategoriId,
+      periodeId, // TAMBAH: Periode wajib
       parentId,
       kode, // Optional - akan di-generate jika tidak ada
       nama,
       deskripsi,
-      targetFrekuensi,
-      satuanFrekuensi,
-      nominalSatuan,
-      totalTarget,
+      nominalActual = 0, // GANTI: Data actual bukan target
+      jumlahTransaksi = 0,
+      keterangan,
       isActive = true,
     } = req.body;
 
     // Validation
-    if (!kategoriId || !nama) {
+    if (!kategoriId || !periodeId || !nama) {
       return res.status(400).json(
         apiResponse(false, null, "Validasi gagal", {
           kategoriId: !kategoriId ? "Kategori wajib dipilih" : undefined,
+          periodeId: !periodeId ? "Periode wajib dipilih" : undefined,
           nama: !nama ? "Nama item wajib diisi" : undefined,
         })
       );
     }
 
-    // Verify kategori exists
-    const kategori = await prisma.kategoriKeuangan.findUnique({
-      where: { id: kategoriId },
-    });
+    // Verify kategori and periode exist
+    const [kategori, periode] = await Promise.all([
+      prisma.kategoriKeuangan.findUnique({
+        where: { id: kategoriId },
+      }),
+      prisma.periodeAnggaran.findUnique({
+        where: { id: periodeId },
+      }),
+    ]);
 
     if (!kategori) {
       return res
         .status(400)
         .json(apiResponse(false, null, "Kategori tidak ditemukan"));
+    }
+
+    if (!periode) {
+      return res
+        .status(400)
+        .json(apiResponse(false, null, "Periode tidak ditemukan"));
     }
 
     // Determine level and validate parent
@@ -215,10 +231,11 @@ async function handlePost(req, res) {
     // Generate kode if not provided
     let finalKode = kode;
     if (!finalKode) {
-      // Count siblings untuk generate kode
+      // Count siblings untuk generate kode dalam periode yang sama
       const siblingCount = await prisma.itemKeuangan.count({
         where: {
           kategoriId,
+          periodeId,
           parentId: parentId || null,
           level,
           isActive: true,
@@ -234,10 +251,11 @@ async function handlePost(req, res) {
       }
     }
 
-    // Check if kode already exists in this category
+    // Check if kode already exists in this category and period
     const existingItem = await prisma.itemKeuangan.findFirst({
       where: {
         kategoriId,
+        periodeId,
         kode: finalKode,
       },
     });
@@ -246,14 +264,15 @@ async function handlePost(req, res) {
       return res
         .status(400)
         .json(
-          apiResponse(false, null, "Kode sudah digunakan dalam kategori ini")
+          apiResponse(false, null, "Kode sudah digunakan dalam kategori dan periode ini")
         );
     }
 
-    // Get next urutan for this level
+    // Get next urutan for this level in this period
     const maxUrutan = await prisma.itemKeuangan.findFirst({
       where: {
         kategoriId,
+        periodeId,
         level,
         parentId: parentId || null,
         isActive: true,
@@ -266,31 +285,18 @@ async function handlePost(req, res) {
     // Prepare item data
     const itemData = {
       kategoriId,
+      periodeId, // TAMBAH: Periode
       parentId: parentId || null,
       kode: finalKode,
       nama,
       deskripsi: deskripsi || null,
       level,
       urutan,
+      nominalActual: parseFloat(nominalActual) || 0, // GANTI: Actual data
+      jumlahTransaksi: parseInt(jumlahTransaksi) || 0,
+      keterangan: keterangan || null,
       isActive,
     };
-
-    // Add optional numeric fields with proper conversion
-    if (targetFrekuensi && !isNaN(targetFrekuensi)) {
-      itemData.targetFrekuensi = parseInt(targetFrekuensi);
-    }
-
-    if (satuanFrekuensi && satuanFrekuensi.trim() !== "") {
-      itemData.satuanFrekuensi = satuanFrekuensi;
-    }
-
-    if (nominalSatuan && !isNaN(nominalSatuan)) {
-      itemData.nominalSatuan = parseFloat(nominalSatuan);
-    }
-
-    if (totalTarget && !isNaN(totalTarget)) {
-      itemData.totalTarget = parseFloat(totalTarget);
-    }
 
     // Create the item
     const item = await prisma.itemKeuangan.create({

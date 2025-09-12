@@ -226,7 +226,7 @@ export default async function handler(req, res) {
 
     // Create a sample periode
     const currentYear = new Date().getFullYear();
-    await prisma.periodeAnggaran.create({
+    const samplePeriode = await prisma.periodeAnggaran.create({
       data: {
         nama: `Anggaran ${currentYear}`,
         tahun: currentYear,
@@ -237,6 +237,33 @@ export default async function handler(req, res) {
         isActive: true
       }
     });
+
+    // Auto populate anggaran items dari item keuangan yang sudah dibuat
+    const allItems = await prisma.itemKeuangan.findMany({
+      where: { isActive: true },
+      orderBy: [
+        { kategoriId: 'asc' },
+        { level: 'asc' },
+        { urutan: 'asc' },
+        { kode: 'asc' }
+      ]
+    });
+
+    if (allItems.length > 0) {
+      const anggaranItemsData = allItems.map(item => ({
+        periodeId: samplePeriode.id,
+        itemKeuanganId: item.id,
+        targetFrekuensi: item.targetFrekuensi || null,
+        satuanFrekuensi: item.satuanFrekuensi || null,
+        nominalSatuan: item.nominalSatuan || null,
+        totalAnggaran: item.totalTarget || 0,
+        keterangan: `Template dari item: ${item.nama}`
+      }));
+
+      await prisma.anggaranItem.createMany({
+        data: anggaranItemsData
+      });
+    }
 
     return res
       .status(201)

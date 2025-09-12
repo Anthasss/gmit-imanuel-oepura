@@ -45,6 +45,9 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/eslint-parser": "^7.28.4",
+    "@babel/preset-react": "^7.27.1",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@tanstack/react-query-devtools": "^5.85.6",
@@ -52,7 +55,6 @@
     "eslint-config-next": "15.4.5",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-unused-imports": "^4.2.0",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.6"
   }

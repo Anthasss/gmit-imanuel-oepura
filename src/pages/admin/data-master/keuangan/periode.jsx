@@ -220,6 +220,13 @@ export default function PeriodeAnggaranPage() {
       defaultValue: true,
       description: "Periode aktif dapat digunakan untuk transaksi keuangan",
     },
+    {
+      key: "autoPopulateItems",
+      label: "Auto Populate Item Anggaran",
+      type: "switch",
+      defaultValue: true,
+      description: "Otomatis copy semua item keuangan sebagai template anggaran untuk periode ini",
+    },
   ];
 
   return (

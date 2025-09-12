@@ -104,7 +104,8 @@ async function handlePost(req, res) {
       tanggalAkhir, 
       keterangan,
       status = "DRAFT",
-      isActive = true 
+      isActive = true,
+      autoPopulateItems = false // Parameter baru untuk auto populate
     } = req.body;
 
     if (!nama || !tahun || !tanggalMulai || !tanggalAkhir) {
@@ -173,6 +174,45 @@ async function handlePost(req, res) {
         isActive
       }
     });
+
+    // Auto populate anggaran items jika diminta
+    if (autoPopulateItems) {
+      try {
+        // Get all active item keuangan
+        const itemKeuanganList = await prisma.itemKeuangan.findMany({
+          where: { 
+            isActive: true 
+          },
+          orderBy: [
+            { kategoriId: 'asc' },
+            { level: 'asc' },
+            { urutan: 'asc' },
+            { kode: 'asc' }
+          ]
+        });
+
+        if (itemKeuanganList.length > 0) {
+          // Prepare anggaran items data
+          const anggaranItemsData = itemKeuanganList.map(item => ({
+            periodeId: periode.id,
+            itemKeuanganId: item.id,
+            targetFrekuensi: item.targetFrekuensi || null,
+            satuanFrekuensi: item.satuanFrekuensi || null,
+            nominalSatuan: item.nominalSatuan || null,
+            totalAnggaran: item.totalTarget || 0,
+            keterangan: `Auto-populated dari template: ${item.nama}`
+          }));
+
+          // Create anggaran items in batch
+          await prisma.anggaranItem.createMany({
+            data: anggaranItemsData
+          });
+        }
+      } catch (populateError) {
+        console.warn("Gagal auto populate anggaran items:", populateError);
+        // Tidak menggagalkan pembuatan periode, hanya warning
+      }
+    }
 
     return res
       .status(201)

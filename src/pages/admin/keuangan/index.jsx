@@ -10,11 +10,12 @@ import {
   PlusCircle,
   Settings,
 } from "lucide-react";
+import { useRouter } from "next/router";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import PageHeader from "@/components/ui/PageHeader";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { useRouter } from "next/router";
 
 export default function KeuanganDashboard() {
   const router = useRouter();
@@ -117,12 +118,12 @@ export default function KeuanganDashboard() {
   return (
     <>
       <PageHeader
-        title="Keuangan"
-        description="Sistem manajemen keuangan GMIT Imanuel Oepura"
         breadcrumb={[
           { label: "Admin", href: "/admin/dashboard" },
           { label: "Keuangan" },
         ]}
+        description="Sistem manajemen keuangan GMIT Imanuel Oepura"
+        title="Keuangan"
       />
 
       <div className="max-w-7xl mx-auto p-6">
@@ -159,8 +160,8 @@ export default function KeuanganDashboard() {
               {quickActions.map((action, index) => (
                 <Button
                   key={index}
-                  variant="outline"
                   className="flex flex-col items-center p-6 h-auto hover:bg-gray-50"
+                  variant="outline"
                   onClick={() => router.push(action.href)}
                 >
                   <div
@@ -205,7 +206,7 @@ export default function KeuanganDashboard() {
                         {link.description}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button size="sm" variant="outline">
                       Kelola
                     </Button>
                   </div>
@@ -234,8 +235,8 @@ export default function KeuanganDashboard() {
               </div>
               <div className="mt-4">
                 <Button
-                  variant="outline"
                   className="w-full"
+                  variant="outline"
                   onClick={() => router.push("/admin/keuangan/transaksi")}
                 >
                   Lihat Semua Transaksi

@@ -205,7 +205,7 @@ model Keluarga {
   // ibadahPengeluarans        IbadahPengeluaran[]
 
   // Keuangan relations
-  transaksiPenerimaan TransaksiPenerimaan[]
+  // transaksiPenerimaan TransaksiPenerimaan[]
 
   @@map("keluarga")
 }
@@ -265,7 +265,7 @@ model Jemaat {
   Majelis                       Majelis[]
   
   // Keuangan relations
-  transaksiPenerimaan TransaksiPenerimaan[]
+  // transaksiPenerimaan TransaksiPenerimaan[]
 
   @@map("jemaat")
 }
@@ -449,7 +449,7 @@ model JadwalIbadah {
   majelisId String?  @db.VarChar(80)
 
   // Keuangan relations
-  transaksiPenerimaan TransaksiPenerimaan[]
+  // transaksiPenerimaan TransaksiPenerimaan[]
 
   @@map("jadwal_ibadah")
 }
@@ -604,6 +604,7 @@ model KategoriKeuangan {
 model ItemKeuangan {
   id                String  @id @default(dbgenerated("concat('item_', gen_random_uuid())")) @db.VarChar(80)
   kategoriId        String  @map("kategori_id") @db.VarChar(80)
+  periodeId         String  @map("periode_id") @db.VarChar(80)  // TAMBAH: Relasi ke periode
   parentId          String? @map("parent_id") @db.VarChar(80) // Untuk hierarki
   
   kode              String  @db.VarChar(20)     // "A", "A.1", "A.1.1", "A.1.1.1"
@@ -613,11 +614,11 @@ model ItemKeuangan {
   level             Int     @default(1)         // Level hierarki (1, 2, 3, 4, dst)
   urutan            Int     @default(0)         // Urutan dalam level yang sama
   
-  // Anggaran info
-  targetFrekuensi   Int?    @map("target_frekuensi")     // Berapa kali dalam periode
-  satuanFrekuensi   String? @map("satuan_frekuensi") @db.VarChar(20) // "Kali", "Bulan", "Tahun"
-  nominalSatuan     Decimal? @map("nominal_satuan") @db.Decimal(15,2)       // Nominal per satuan
-  totalTarget       Decimal? @map("total_target") @db.Decimal(15,2)         // Total anggaran target
+  // Data actual transaksi (bukan target/anggaran)
+  nominalActual     Decimal @default(0) @map("nominal_actual") @db.Decimal(15,2)  // Total actual penerimaan/pengeluaran
+  jumlahTransaksi   Int     @default(0) @map("jumlah_transaksi")                  // Jumlah transaksi yang terjadi
+  
+  keterangan        String? @db.Text
   
   isActive          Boolean @default(true) @map("is_active")
   
@@ -626,17 +627,15 @@ model ItemKeuangan {
 
   // Relations
   kategori          KategoriKeuangan @relation(fields: [kategoriId], references: [id])
+  periode           PeriodeAnggaran  @relation(fields: [periodeId], references: [id])
   parent            ItemKeuangan?    @relation("HierarkiItem", fields: [parentId], references: [id])
   children          ItemKeuangan[]   @relation("HierarkiItem")
   
-  // Transaksi yang terkait dengan item ini
-  transaksiPenerimaan TransaksiPenerimaan[]
-  transaksiPengeluaran TransaksiPengeluaran[]
-  anggaranItems AnggaranItem[]
-  rekapKeuangan RekapKeuangan[]
+  rekapKeuangan     RekapKeuangan[]
 
-  @@unique([kategoriId, kode], name: "unique_kode_per_kategori")
+  @@unique([kategoriId, periodeId, kode], name: "unique_kode_per_kategori_periode")
   @@index([kategoriId], name: "idx_item_kategori")
+  @@index([periodeId], name: "idx_item_periode")
   @@index([parentId], name: "idx_item_parent")
   @@index([level], name: "idx_item_level")
   @@map("item_keuangan")
@@ -658,9 +657,7 @@ model PeriodeAnggaran {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  anggaranItems AnggaranItem[]
-  transaksiPenerimaan TransaksiPenerimaan[]
-  transaksiPengeluaran TransaksiPengeluaran[]
+  itemKeuangan  ItemKeuangan[]
   rekapKeuangan RekapKeuangan[]
 
   @@map("periode_anggaran")
@@ -673,95 +670,95 @@ enum StatusPeriode {
 }
 
 // Model untuk anggaran per item per periode
-model AnggaranItem {
-  id              String @id @default(dbgenerated("concat('ang_', gen_random_uuid())")) @db.VarChar(80)
-  periodeId       String @map("periode_id") @db.VarChar(80)
-  itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
+// model AnggaranItem {
+//   id              String @id @default(dbgenerated("concat('ang_', gen_random_uuid())")) @db.VarChar(80)
+//   periodeId       String @map("periode_id") @db.VarChar(80)
+//   itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
   
-  targetFrekuensi Int?    @map("target_frekuensi")
-  satuanFrekuensi String? @map("satuan_frekuensi") @db.VarChar(20)
-  nominalSatuan   Decimal? @map("nominal_satuan") @db.Decimal(15,2)
-  totalAnggaran   Decimal  @map("total_anggaran") @db.Decimal(15,2)
+//   targetFrekuensi Int?    @map("target_frekuensi")
+//   satuanFrekuensi String? @map("satuan_frekuensi") @db.VarChar(20)
+//   nominalSatuan   Decimal? @map("nominal_satuan") @db.Decimal(15,2)
+//   totalAnggaran   Decimal  @map("total_anggaran") @db.Decimal(15,2)
   
-  keterangan      String? @db.Text
+//   keterangan      String? @db.Text
   
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+//   createdAt       DateTime @default(now()) @map("created_at")
+//   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
-  itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
+//   // Relations
+//   periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
+//   itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
 
-  @@unique([periodeId, itemKeuanganId], name: "unique_periode_item")
-  @@map("anggaran_item")
-}
+//   @@unique([periodeId, itemKeuanganId], name: "unique_periode_item")
+//   @@map("anggaran_item")
+// }
 
-// Model untuk transaksi penerimaan
-model TransaksiPenerimaan {
-  id              String @id @default(dbgenerated("concat('tpen_', gen_random_uuid())")) @db.VarChar(80)
-  periodeId       String @map("periode_id") @db.VarChar(80)
-  itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
-  jadwalIbadahId  String? @map("jadwal_ibadah_id") @db.VarChar(80) // Jika dari ibadah
-  jemaatId        String? @map("jemaat_id") @db.VarChar(80)        // Jika dari jemaat tertentu
-  keluargaId      String? @map("keluarga_id") @db.VarChar(80)      // Jika dari keluarga
+// // Model untuk transaksi penerimaan
+// model TransaksiPenerimaan {
+//   id              String @id @default(dbgenerated("concat('tpen_', gen_random_uuid())")) @db.VarChar(80)
+//   periodeId       String @map("periode_id") @db.VarChar(80)
+//   itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
+//   jadwalIbadahId  String? @map("jadwal_ibadah_id") @db.VarChar(80) // Jika dari ibadah
+//   jemaatId        String? @map("jemaat_id") @db.VarChar(80)        // Jika dari jemaat tertentu
+//   keluargaId      String? @map("keluarga_id") @db.VarChar(80)      // Jika dari keluarga
   
-  tanggal         DateTime @db.Date
-  nominal         Decimal @db.Decimal(15,2)
-  keterangan      String?  @db.Text
-  nomorReferensi  String?  @map("nomor_referensi") @db.VarChar(50) // Nomor bukti, dll
+//   tanggal         DateTime @db.Date
+//   nominal         Decimal @db.Decimal(15,2)
+//   keterangan      String?  @db.Text
+//   nomorReferensi  String?  @map("nomor_referensi") @db.VarChar(50) // Nomor bukti, dll
   
-  // Metadata
-  sumberData      String?  @map("sumber_data") @db.VarChar(50)     // "manual", "import", "ibadah"
+//   // Metadata
+//   sumberData      String?  @map("sumber_data") @db.VarChar(50)     // "manual", "import", "ibadah"
   
-  createdBy       String?  @map("created_by") @db.VarChar(80)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+//   createdBy       String?  @map("created_by") @db.VarChar(80)
+//   createdAt       DateTime @default(now()) @map("created_at")
+//   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
-  itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
-  jadwalIbadah    JadwalIbadah?   @relation(fields: [jadwalIbadahId], references: [id])
-  jemaat          Jemaat?         @relation(fields: [jemaatId], references: [id])
-  keluarga        Keluarga?       @relation(fields: [keluargaId], references: [id])
+//   // Relations
+//   periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
+//   itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
+//   jadwalIbadah    JadwalIbadah?   @relation(fields: [jadwalIbadahId], references: [id])
+//   jemaat          Jemaat?         @relation(fields: [jemaatId], references: [id])
+//   keluarga        Keluarga?       @relation(fields: [keluargaId], references: [id])
 
-  @@index([periodeId], name: "idx_periode_pen")
-  @@index([itemKeuanganId], name: "idx_item_pen")
-  @@index([tanggal], name: "idx_tanggal_pen")
-  @@index([jadwalIbadahId], name: "idx_ibadah_pen")
-  @@map("transaksi_penerimaan")
-}
+//   @@index([periodeId], name: "idx_periode_pen")
+//   @@index([itemKeuanganId], name: "idx_item_pen")
+//   @@index([tanggal], name: "idx_tanggal_pen")
+//   @@index([jadwalIbadahId], name: "idx_ibadah_pen")
+//   @@map("transaksi_penerimaan")
+// }
 
-// Model untuk transaksi pengeluaran
-model TransaksiPengeluaran {
-  id              String @id @default(dbgenerated("concat('tkel_', gen_random_uuid())")) @db.VarChar(80)
-  periodeId       String @map("periode_id") @db.VarChar(80)
-  itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
+// // Model untuk transaksi pengeluaran
+// model TransaksiPengeluaran {
+//   id              String @id @default(dbgenerated("concat('tkel_', gen_random_uuid())")) @db.VarChar(80)
+//   periodeId       String @map("periode_id") @db.VarChar(80)
+//   itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
   
-  tanggal         DateTime @db.Date
-  nominal         Decimal @db.Decimal(15,2)
-  keterangan      String?  @db.Text
-  nomorReferensi  String?  @map("nomor_referensi") @db.VarChar(50)
-  penerima        String?  @db.VarChar(100)  // Siapa yang menerima
+//   tanggal         DateTime @db.Date
+//   nominal         Decimal @db.Decimal(15,2)
+//   keterangan      String?  @db.Text
+//   nomorReferensi  String?  @map("nomor_referensi") @db.VarChar(50)
+//   penerima        String?  @db.VarChar(100)  // Siapa yang menerima
   
-  // Approval workflow
-  status          StatusTransaksi @default(DRAFT)
-  approvedBy      String?  @map("approved_by") @db.VarChar(80)
-  approvedAt      DateTime? @map("approved_at")
+//   // Approval workflow
+//   status          StatusTransaksi @default(DRAFT)
+//   approvedBy      String?  @map("approved_by") @db.VarChar(80)
+//   approvedAt      DateTime? @map("approved_at")
   
-  createdBy       String?  @map("created_by") @db.VarChar(80)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+//   createdBy       String?  @map("created_by") @db.VarChar(80)
+//   createdAt       DateTime @default(now()) @map("created_at")
+//   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
-  itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
+//   // Relations
+//   periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
+//   itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
 
-  @@index([periodeId], name: "idx_periode_kel")
-  @@index([itemKeuanganId], name: "idx_item_kel")
-  @@index([tanggal], name: "idx_tanggal_kel")
-  @@index([status], name: "idx_status_kel")
-  @@map("transaksi_pengeluaran")
-}
+//   @@index([periodeId], name: "idx_periode_kel")
+//   @@index([itemKeuanganId], name: "idx_item_kel")
+//   @@index([tanggal], name: "idx_tanggal_kel")
+//   @@index([status], name: "idx_status_kel")
+//   @@map("transaksi_pengeluaran")
+// }
 
 enum StatusTransaksi {
   DRAFT
@@ -797,79 +794,3 @@ model RekapKeuangan {
   @@map("rekap_keuangan")
 }
 
-// model Pengeluaran {
-//   id   String @id @default(dbgenerated("concat('out_', gen_random_uuid())")) @db.VarChar(80)
-//   nama String @db.VarChar(50)
-
-//   ibadahPengeluarans   IbadahPengeluaran[]
-//   kegiatanPengeluarans KegiatanPengeluaran[]
-
-//   @@map("pengeluaran")
-// }
-
-// model IbadahPenerimaan {
-//   idIbadah      String @db.VarChar(80)
-//   idJemaat      String @db.VarChar(80)
-//   idKeluarga    String @db.VarChar(80)
-//   idPenerimaan  String @db.VarChar(80)
-//   nominal       BigInt
-
-//   ibadah      Ibadah      @relation(fields: [idIbadah], references: [id])
-//   jemaat      Jemaat      @relation(fields: [idJemaat], references: [id])
-//   keluarga    Keluarga    @relation(fields: [idKeluarga], references: [id])
-//   penerimaan  Penerimaan  @relation(fields: [idPenerimaan], references: [id])
-
-//   @@id([idIbadah, idJemaat, idPenerimaan])
-//   @@map("ibadah_penerimaan")
-// }
-
-// model IbadahPengeluaran {
-//   idIbadah      String @db.VarChar(80)
-//   idJemaat      String @db.VarChar(80)
-//   idKeluarga    String @db.VarChar(80)
-//   idPengeluaran String @db.VarChar(80)
-//   nominal       BigInt
-
-//   ibadah      Ibadah      @relation(fields: [idIbadah], references: [id])
-//   jemaat      Jemaat      @relation(fields: [idJemaat], references: [id])
-//   keluarga    Keluarga    @relation(fields: [idKeluarga], references: [id])
-//   pengeluaran Pengeluaran @relation(fields: [idPengeluaran], references: [id])
-
-//   @@id([idIbadah, idJemaat, idPengeluaran])
-//   @@map("ibadah_pengeluaran")
-// }
-
-// model Kegiatan {
-//   id          String @id @default(dbgenerated("concat('kgt_', gen_random_uuid())")) @db.VarChar(80)
-//   nama        String @db.VarChar(50)
-//   deskripsi   String @db.Text
-
-//   kegiatanPenerimaans  KegiatanPenerimaan[]
-//   kegiatanPengeluarans KegiatanPengeluaran[]
-
-//   @@map("kegiatan")
-// }
-
-// model KegiatanPenerimaan {
-//   idKegiatan    String @db.VarChar(80)
-//   idPenerimaan  String @db.VarChar(80)
-//   nominal       BigInt
-
-//   kegiatan    Kegiatan    @relation(fields: [idKegiatan], references: [id])
-//   penerimaan  Penerimaan  @relation(fields: [idPenerimaan], references: [id])
-
-//   @@id([idKegiatan, idPenerimaan])
-//   @@map("kegiatan_penerimaan")
-// }
-
-// model KegiatanPengeluaran {
-//   idKegiatan    String @db.VarChar(80)
-//   idPengeluaran String @db.VarChar(80)
-//   nominal       BigInt
-
-//   kegiatan    Kegiatan    @relation(fields: [idKegiatan], references: [id])
-//   pengeluaran Pengeluaran @relation(fields: [idPengeluaran], references: [id])
-
-//   @@id([idKegiatan, idPengeluaran])
-//   @@map("kegiatan_pengeluaran")
-// }
