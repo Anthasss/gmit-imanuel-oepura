@@ -21,6 +21,17 @@ const nextConfig = {
     // number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 2,
   },
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 's3.nevaobjects.id',
+        port: '',
+        pathname: '/files-bucket/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
