@@ -5,7 +5,17 @@ export default function GalleryImage({ galleryItem }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   // Parse fotos if it's a string
-  const fotos = typeof galleryItem.fotos === 'string' ? JSON.parse(galleryItem.fotos) : galleryItem.fotos;
+  let fotos;
+  if (typeof galleryItem.fotos === 'string') {
+    try {
+      fotos = JSON.parse(galleryItem.fotos);
+    } catch (e) {
+      console.error("Failed to parse galleryItem.fotos:", e);
+      fotos = [];
+    }
+  } else {
+    fotos = galleryItem.fotos;
+  }
 
   // Format the date
   const formatDate = (dateString) => {
