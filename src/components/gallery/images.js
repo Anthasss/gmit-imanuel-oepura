@@ -1,18 +1,21 @@
 import GalleryImage from "./galleryImage"
 
-export default function Images({ images }) {
+export default function Images({ galleryItems }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center min-h-screen bg-gray-100 p-8">
-      {images && images.length > 0 ? (
-        images.map((img, idx) => (
-          <GalleryImage
-            key={idx}
-            image={{ src: img.url }}
-            title={img.originalName}
-          />
-        ))
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {galleryItems && galleryItems.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {galleryItems.map((item) => (
+            <GalleryImage
+              key={item.id}
+              galleryItem={item}
+            />
+          ))}
+        </div>
       ) : (
-        <p>No images found.</p>
+        <div className="text-center py-12">
+          <p className="text-gray-500 text-lg">No gallery items found.</p>
+        </div>
       )}
     </div>
   );
