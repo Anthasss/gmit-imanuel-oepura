@@ -22,12 +22,8 @@ export default function Home() {
           />
           <div className="absolute flex flex-col p-8">
             <p className="text-white text-2xl font-bold">Welcome to</p>
-            <h1 className="text-white text-4xl font-bold">
-              GMIT Imanuel Oepura
-            </h1>
-            <p className="text-white text-base">
-              Together in love, growing in faith, serving in hope.
-            </p>
+            <h1 className="text-white text-4xl font-bold">GMIT Imanuel Oepura</h1>
+            <p className="text-white text-base">Together in love, growing in faith, serving in hope.</p>
           </div>
         </div>
 
@@ -50,19 +46,19 @@ export default function Home() {
             className="absolute inset-0 object-cover w-full h-full"
           />
           <div className="relative z-10 flex flex-col w-full p-4">
-            <ScheduleRow 
-              jenisIbadah="Cell Group/Kelompok Kecil" 
-              title="Jadwal Cell Group" 
-              limit={4} 
+            <ScheduleRow
+              kategori="Rayon"
+              title="Jadwal Ibadah Rayon"
+              limit={4}
             />
-            <ScheduleRow 
-              kategori="Keluarga" 
-              title="Jadwal Ibadah Keluarga" 
-              limit={6} 
+            <ScheduleRow
+              kategori="Keluarga"
+              title="Jadwal Ibadah Keluarga"
+              limit={6}
             />
-            <ScheduleRow 
-              title="Semua Jadwal Ibadah" 
-              limit={4} 
+            <ScheduleRow
+              title="Semua Jadwal Ibadah"
+              limit={4}
             />
           </div>
         </div>
@@ -88,12 +84,8 @@ export default function Home() {
             />
             <div className="absolute flex flex-col p-16">
               <p className="text-white text-4xl font-bold">Welcome to</p>
-              <h1 className="text-white text-6xl font-bold">
-                GMIT Imanuel Oepura
-              </h1>
-              <p className="text-white text-lg">
-                Together in love, growing in faith, serving in hope.
-              </p>
+              <h1 className="text-white text-6xl font-bold">GMIT Imanuel Oepura</h1>
+              <p className="text-white text-lg">Together in love, growing in faith, serving in hope.</p>
             </div>
           </div>
 
@@ -117,19 +109,19 @@ export default function Home() {
               className="absolute inset-0 object-cover w-full h-full"
             />
             <div className="relative z-10 flex flex-col w-full p-8">
-              <ScheduleRow 
-                jenisIbadah="Cell Group/Kelompok Kecil" 
-                title="Jadwal Cell Group" 
-                limit={4} 
+              <ScheduleRow
+                kategori="Rayon"
+                title="Jadwal Ibadah Rayon"
+                limit={4}
               />
-              <ScheduleRow 
-                kategori="Keluarga" 
-                title="Jadwal Ibadah Keluarga" 
-                limit={6} 
+              <ScheduleRow
+                kategori="Keluarga"
+                title="Jadwal Ibadah Keluarga"
+                limit={6}
               />
-              <ScheduleRow 
-                title="Semua Jadwal Ibadah" 
-                limit={4} 
+              <ScheduleRow
+                title="Semua Jadwal Ibadah"
+                limit={4}
               />
             </div>
           </div>
