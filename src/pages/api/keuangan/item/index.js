@@ -80,7 +80,7 @@ async function handleGet(req, res) {
       where.level = parseInt(level);
     }
 
-    const [items, total] = await Promise.all([
+    const [itemsRaw, total] = await Promise.all([
       prisma.itemKeuangan.findMany({
         where,
         include: {
@@ -116,6 +116,16 @@ async function handleGet(req, res) {
       }),
       prisma.itemKeuangan.count({ where }),
     ]);
+
+    // Convert BigInt fields to string for JSON serialization
+    const items = itemsRaw.map(item => ({
+      ...item,
+      targetFrekuensi: item.targetFrekuensi,
+      satuanFrekuensi: item.satuanFrekuensi,
+      nominalSatuan: item.nominalSatuan ? item.nominalSatuan.toString() : null,
+      totalTarget: item.totalTarget ? item.totalTarget.toString() : null,
+      nominalActual: item.nominalActual ? item.nominalActual.toString() : "0",
+    }));
 
     const pagination = {
       page: parseInt(page),
@@ -162,7 +172,13 @@ async function handlePost(req, res) {
       kode, // Optional - akan di-generate jika tidak ada
       nama,
       deskripsi,
-      nominalActual = 0, // GANTI: Data actual bukan target
+      // Target/anggaran fields (TAMBAH)
+      targetFrekuensi,
+      satuanFrekuensi,
+      nominalSatuan,
+      totalTarget,
+      // Actual data fields
+      nominalActual = 0,
       jumlahTransaksi = 0,
       keterangan,
       isActive = true,
@@ -292,7 +308,13 @@ async function handlePost(req, res) {
       deskripsi: deskripsi || null,
       level,
       urutan,
-      nominalActual: parseFloat(nominalActual) || 0, // GANTI: Actual data
+      // Target/anggaran fields (TAMBAH)
+      targetFrekuensi: targetFrekuensi ? parseInt(targetFrekuensi) : null,
+      satuanFrekuensi: satuanFrekuensi || null,
+      nominalSatuan: nominalSatuan ? parseFloat(nominalSatuan) : null,
+      totalTarget: totalTarget ? parseFloat(totalTarget) : null,
+      // Actual data fields
+      nominalActual: parseFloat(nominalActual) || 0,
       jumlahTransaksi: parseInt(jumlahTransaksi) || 0,
       keterangan: keterangan || null,
       isActive,

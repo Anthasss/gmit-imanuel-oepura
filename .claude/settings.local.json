@@ -57,7 +57,8 @@
       "Read(//d/**)",
       "Bash(npx eslint:*)",
       "Bash(git checkout:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,6 +1,7 @@
-// pages/admin/master-data/item-keuangan/create.jsx
+// pages/admin/data-master/keuangan/item/edit.jsx
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from 'next/navigation';
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Plus, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -15,6 +16,14 @@ const itemKeuanganService = {
     const response = await axios.post("/api/keuangan/item", data);
     return response.data;
   },
+  update: async (id, data) => {
+    const response = await axios.patch(`/api/keuangan/item/${id}`, data);
+    return response.data;
+  },
+  delete: async (id) => {
+    const response = await axios.delete(`/api/keuangan/item/${id}`);
+    return response.data;
+  },
   getByKategoriAndPeriode: async (kategoriId, periodeId) => {
     const response = await axios.get(
       `/api/keuangan/item?kategoriId=${kategoriId}&periodeId=${periodeId}`
@@ -23,10 +32,13 @@ const itemKeuanganService = {
   },
 };
 
-export default function CreateItemKeuanganPage() {
+export default function EditItemKeuanganPage() {
   const router = useRouter();
-  const [selectedKategori, setSelectedKategori] = useState("");
-  const [selectedPeriode, setSelectedPeriode] = useState("");
+  const searchParams = useSearchParams();
+  
+  // Get periode and kategori from URL params
+  const [selectedKategori, setSelectedKategori] = useState(searchParams?.get('kategoriId') || "");
+  const [selectedPeriode, setSelectedPeriode] = useState(searchParams?.get('periodeId') || "");
   const [items, setItems] = useState([]);
   const [saving, setSaving] = useState(false);
 
@@ -49,23 +61,26 @@ export default function CreateItemKeuanganPage() {
   });
 
   // Query untuk existing items berdasarkan kategori dan periode
-  const { data: existingItems, refetch: refetchItems } = useQuery({
+  const { data: existingItems } = useQuery({
     queryKey: ["existing-items", selectedKategori, selectedPeriode],
     queryFn: () => itemKeuanganService.getByKategoriAndPeriode(selectedKategori, selectedPeriode),
     enabled: !!(selectedKategori && selectedPeriode),
   });
 
-  // Initialize dengan item level 1 jika belum ada
+  // Initialize items from existing data
   useEffect(() => {
     if (selectedKategori && selectedPeriode && existingItems?.data?.items) {
       const existing = existingItems.data.items;
-      if (existing.length === 0) {
-        // Kategori kosong, buat item level 1 pertama
+      if (existing.length > 0) {
+        // Convert existing items ke format tree untuk editing
+        setItems(buildTreeFromExisting(existing));
+      } else {
+        // Jika tidak ada items, buat item level 1 pertama
         setItems([
           {
             id: "temp_1",
             level: 1,
-            kode: "A",
+            kode: getKategoriKode(),
             nama: "",
             deskripsi: "",
             targetFrekuensi: "",
@@ -76,12 +91,17 @@ export default function CreateItemKeuanganPage() {
             children: [],
           },
         ]);
-      } else {
-        // Convert existing items ke format tree
-        setItems(buildTreeFromExisting(existing));
       }
     }
-  }, [selectedKategori, selectedPeriode, existingItems]);
+  }, [selectedKategori, selectedPeriode, existingItems, kategoriOptions]);
+
+  // Get kategori kode
+  const getKategoriKode = () => {
+    const selectedKat = kategoriOptions?.data?.find(
+      (k) => k.id === selectedKategori
+    );
+    return selectedKat?.kode || "A";
+  };
 
   // Build tree dari existing items
   const buildTreeFromExisting = (existingItems) => {
@@ -94,10 +114,11 @@ export default function CreateItemKeuanganPage() {
         ...item,
         children: [],
         id: item.id, // Keep real ID for existing items
-        targetFrekuensi: item.targetFrekuensi || "",
+        // Handle target fields - ensure they're properly mapped
+        targetFrekuensi: item.targetFrekuensi ? item.targetFrekuensi.toString() : "",
         satuanFrekuensi: item.satuanFrekuensi || "",
-        nominalSatuan: item.nominalSatuan || "",
-        totalTarget: item.totalTarget || "",
+        nominalSatuan: item.nominalSatuan ? item.nominalSatuan.toString() : "",
+        totalTarget: item.totalTarget ? item.totalTarget.toString() : "",
       });
     });
 
@@ -276,14 +297,7 @@ export default function CreateItemKeuanganPage() {
     };
 
     const updatedItems = deleteFromTree(items);
-
-    // Get kategori kode for update
-    const selectedKat = kategoriOptions?.data?.find(
-      (k) => k.id === selectedKategori
-    );
-    const kategoriKode = selectedKat?.kode || "A";
-
-    setItems(updateKodes(updatedItems, "", 1, kategoriKode));
+    setItems(updateKodes(updatedItems));
   };
 
   // Update item
@@ -359,7 +373,34 @@ export default function CreateItemKeuanganPage() {
     setSaving(true);
 
     try {
-      // Flatten items untuk save ke database
+      // Get existing items to know which ones to delete
+      const existingItemIds = existingItems?.data?.items?.map(item => item.id) || [];
+      
+      // Collect all current item IDs (excluding temp items)
+      const getCurrentItemIds = (itemList) => {
+        let ids = [];
+        for (const item of itemList) {
+          if (!item.id.startsWith("temp_")) {
+            ids.push(item.id);
+          }
+          if (item.children && item.children.length > 0) {
+            ids.push(...getCurrentItemIds(item.children));
+          }
+        }
+        return ids;
+      };
+
+      const currentItemIds = getCurrentItemIds(items);
+      
+      // Find items to delete
+      const itemsToDelete = existingItemIds.filter(id => !currentItemIds.includes(id));
+
+      // Delete removed items
+      for (const itemId of itemsToDelete) {
+        await itemKeuanganService.delete(itemId);
+      }
+
+      // Flatten items untuk save/update ke database
       const flattenItems = async (itemList, parentRealId = null) => {
         let result = [];
 
@@ -391,11 +432,7 @@ export default function CreateItemKeuanganPage() {
             savedItem = await itemKeuanganService.create(itemData);
           } else {
             // Existing item - update
-            savedItem = await axios.patch(
-              `/api/keuangan/item/${item.id}`,
-              itemData
-            );
-            savedItem = savedItem.data;
+            savedItem = await itemKeuanganService.update(item.id, itemData);
           }
 
           result.push(savedItem);
@@ -415,7 +452,7 @@ export default function CreateItemKeuanganPage() {
 
       await flattenItems(items);
 
-      toast.success("Item keuangan berhasil disimpan");
+      toast.success("Item keuangan berhasil diperbarui");
       router.push("/admin/data-master/keuangan/item");
     } catch (error) {
       console.error("Error saving items:", error);
@@ -425,7 +462,7 @@ export default function CreateItemKeuanganPage() {
     }
   };
 
-  // Render item form
+  // Render item form (sama dengan create page)
   const renderItemForm = (item, level = 1, index = 0) => {
     const indentClass = level > 1 ? `ml-${(level - 1) * 8}` : "";
 
@@ -605,6 +642,10 @@ export default function CreateItemKeuanganPage() {
     );
   };
 
+  // Get current periode info
+  const currentPeriodeInfo = periodeOptions?.data?.find(p => p.value === selectedPeriode);
+  const currentKategoriInfo = kategoriOptions?.data?.find(k => k.id === selectedKategori);
+
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
@@ -615,9 +656,9 @@ export default function CreateItemKeuanganPage() {
             Kembali
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Buat Item Keuangan</h1>
+            <h1 className="text-2xl font-bold">Edit Item Keuangan</h1>
             <p className="text-gray-600">
-              Buat struktur hierarkis item keuangan
+              Edit struktur hierarkis item keuangan untuk {currentKategoriInfo?.nama} - {currentPeriodeInfo?.label}
             </p>
           </div>
         </div>
@@ -628,55 +669,42 @@ export default function CreateItemKeuanganPage() {
           className="min-w-32"
         >
           <Save className="w-4 h-4 mr-2" />
-          {saving ? "Menyimpan..." : "Simpan"}
+          {saving ? "Menyimpan..." : "Update"}
         </Button>
       </div>
 
-      {/* Pilih Kategori dan Periode */}
+      {/* Info Kategori dan Periode (Read-only) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Pilih Kategori</CardTitle>
+            <CardTitle>Kategori</CardTitle>
           </CardHeader>
           <CardContent>
-            <select
-              value={selectedKategori}
-              onChange={(e) => setSelectedKategori(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Pilih kategori keuangan</option>
-              {kategoriOptions?.data?.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.kode} - {cat.nama}
-                </option>
-              ))}
-            </select>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="font-medium">{currentKategoriInfo?.kode} - {currentKategoriInfo?.nama}</span>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Pilih Periode Anggaran</CardTitle>
+            <CardTitle>Periode Anggaran</CardTitle>
           </CardHeader>
           <CardContent>
-            <select
-              value={selectedPeriode}
-              onChange={(e) => setSelectedPeriode(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Pilih periode anggaran</option>
-              {periodeOptions?.data?.map((periode) => (
-                <option key={periode.value} value={periode.value}>
-                  {periode.label}
-                </option>
-              ))}
-            </select>
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <span className="font-medium">{currentPeriodeInfo?.label}</span>
+              {currentPeriodeInfo?.tanggalMulai && currentPeriodeInfo?.tanggalAkhir && (
+                <div className="text-sm text-gray-600 mt-1">
+                  {new Date(currentPeriodeInfo.tanggalMulai).toLocaleDateString('id-ID')} - {new Date(currentPeriodeInfo.tanggalAkhir).toLocaleDateString('id-ID')}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Form Items */}
-      {selectedKategori && selectedPeriode && (
+      {selectedKategori && selectedPeriode && items.length > 0 && (
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -692,6 +720,17 @@ export default function CreateItemKeuanganPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Loading state */}
+      {selectedKategori && selectedPeriode && items.length === 0 && (
+        <Card>
+          <CardContent>
+            <div className="text-center py-8">
+              <div className="text-gray-500">Memuat data...</div>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

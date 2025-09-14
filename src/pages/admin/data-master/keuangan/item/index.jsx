@@ -18,8 +18,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ViewModal from "@/components/ui/ViewModal";
-import EditModal from "@/components/ui/EditModal";
-import CreateModal from "@/components/ui/CreateModal";
 
 import { useRouter } from "next/navigation";
 // Service untuk API calls
@@ -49,13 +47,12 @@ export default function ItemKeuanganPage() {
   // State untuk modal dan dialog
   const [deleteItem, setDeleteItem] = useState(null);
   const [viewItem, setViewItem] = useState(null);
-  const [editItem, setEditItem] = useState(null);
-  const [showCreate, setShowCreate] = useState(false);
 
   // State untuk filter dan search
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
+  const [selectedPeriode, setSelectedPeriode] = useState("all");
 
   // Format rupiah helper
   const formatRupiah = (amount) => {
@@ -70,13 +67,14 @@ export default function ItemKeuanganPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: [
       "item-keuangan",
-      { search: searchTerm, category: selectedCategory, level: selectedLevel },
+      { search: searchTerm, category: selectedCategory, level: selectedLevel, periode: selectedPeriode },
     ],
     queryFn: () =>
       itemKeuanganService.get({
         search: searchTerm,
         kategoriId: selectedCategory !== "all" ? selectedCategory : undefined,
         level: selectedLevel !== "all" ? selectedLevel : undefined,
+        periodeId: selectedPeriode !== "all" ? selectedPeriode : undefined,
       }),
     staleTime: 5 * 60 * 1000,
   });
@@ -86,6 +84,15 @@ export default function ItemKeuanganPage() {
     queryKey: ["kategori-keuangan-options"],
     queryFn: async () => {
       const response = await axios.get("/api/keuangan/kategori/options");
+      return response.data;
+    },
+  });
+
+  // Query untuk periode options
+  const { data: periodeOptions } = useQuery({
+    queryKey: ["periode-anggaran-options"],
+    queryFn: async () => {
+      const response = await axios.get("/api/keuangan/periode/options");
       return response.data;
     },
   });
@@ -103,29 +110,26 @@ export default function ItemKeuanganPage() {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => itemKeuanganService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["item-keuangan"] });
-      toast.success("Item keuangan berhasil diperbarui");
-      setEditItem(null);
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "Gagal memperbarui data");
-    },
-  });
 
-  const createMutation = useMutation({
-    mutationFn: (data) => itemKeuanganService.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["item-keuangan"] });
-      toast.success("Item keuangan berhasil ditambahkan");
-      setShowCreate(false);
-    },
-    onError: (error) => {
-      toast.error(error?.response?.data?.message || "Gagal menambahkan data");
-    },
-  });
+  // Helper untuk group items by periode
+  const groupItemsByPeriode = (items) => {
+    const grouped = new Map();
+    
+    items.forEach((item) => {
+      const periodeId = item.periodeId;
+      if (!grouped.has(periodeId)) {
+        grouped.set(periodeId, []);
+      }
+      grouped.get(periodeId).push(item);
+    });
+    
+    return grouped;
+  };
+
+  // Helper untuk get periode info
+  const getPeriodeInfo = (periodeId) => {
+    return periodeOptions?.data?.find(p => p.value === periodeId);
+  };
 
   // Helper untuk render hierarki tree
   const buildTree = (items) => {
@@ -192,6 +196,9 @@ export default function ItemKeuanganPage() {
                   Kategori: {item.kategori?.nama || "-"} | Parent:{" "}
                   {item.parent?.nama || "Root"} | Sub Item:{" "}
                   {item._count?.children || 0}
+                  {selectedPeriode === "all" && (
+                    <span> | Periode: {getPeriodeInfo(item.periodeId)?.label || item.periodeId}</span>
+                  )}
                 </div>
 
                 {item.totalTarget && (
@@ -221,13 +228,6 @@ export default function ItemKeuanganPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setEditItem(item)}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => setDeleteItem(item)}
             >
               <Trash2 className="w-4 h-4" />
@@ -247,83 +247,6 @@ export default function ItemKeuanganPage() {
     );
   };
 
-  // Form fields untuk modal
-  const formFields = [
-    {
-      key: "kategoriId",
-      label: "Kategori",
-      type: "select",
-      options:
-        kategoriOptions?.data?.map((cat) => ({
-          value: cat.id,
-          label: `${cat.kode} - ${cat.nama}`,
-        })) || [],
-      required: true,
-      placeholder: "Pilih kategori keuangan",
-    },
-    {
-      key: "parentId",
-      label: "Parent Item",
-      type: "select",
-      options:
-        data?.data?.items?.map((item) => ({
-          value: item.id,
-          label: `${item.kode} - ${item.nama}`,
-        })) || [],
-      placeholder: "Pilih parent item (opsional)",
-    },
-    {
-      key: "nama",
-      label: "Nama Item",
-      type: "text",
-      required: true,
-      placeholder: "Contoh: Persembahan Perpuluhan",
-    },
-    {
-      key: "deskripsi",
-      label: "Deskripsi",
-      type: "textarea",
-      placeholder: "Deskripsi detail item keuangan",
-      rows: 3,
-    },
-    {
-      key: "targetFrekuensi",
-      label: "Target Frekuensi",
-      type: "number",
-      placeholder: "Contoh: 12",
-    },
-    {
-      key: "satuanFrekuensi",
-      label: "Satuan Frekuensi",
-      type: "select",
-      options: [
-        { value: "Kali", label: "Kali" },
-        { value: "Bulan", label: "Per Bulan" },
-        { value: "Tahun", label: "Per Tahun" },
-        { value: "Minggu", label: "Per Minggu" },
-        { value: "Hari", label: "Per Hari" },
-      ],
-      placeholder: "Pilih satuan",
-    },
-    {
-      key: "nominalSatuan",
-      label: "Nominal Per Satuan",
-      type: "number",
-      placeholder: "Masukkan nominal per satuan",
-    },
-    {
-      key: "totalTarget",
-      label: "Total Target Anggaran",
-      type: "number",
-      placeholder: "Masukkan total target anggaran",
-    },
-    {
-      key: "isActive",
-      label: "Status Aktif",
-      type: "checkbox",
-      defaultValue: true,
-    },
-  ];
 
   // View fields untuk modal detail
   const viewFields = [
@@ -383,7 +306,7 @@ export default function ItemKeuanganPage() {
   }
 
   const items = data?.data?.items || [];
-  const tree = buildTree(items);
+  const groupedByPeriode = groupItemsByPeriode(items);
 
   return (
     <div className="space-y-6 p-6">
@@ -453,29 +376,117 @@ export default function ItemKeuanganPage() {
               <option value="3">Level 3</option>
               <option value="4">Level 4</option>
             </select>
+
+            {/* Periode Filter */}
+            <select
+              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              value={selectedPeriode}
+              onChange={(e) => setSelectedPeriode(e.target.value)}
+            >
+              <option value="all">Semua Periode</option>
+              {periodeOptions?.data?.map((periode) => (
+                <option key={periode.value} value={periode.value}>
+                  {periode.label}
+                </option>
+              ))}
+            </select>
           </div>
         </CardContent>
       </Card>
 
-      {/* Data Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Item Keuangan ({items.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
+      {/* Data by Periode */}
+      {isLoading ? (
+        <Card>
+          <CardContent>
             <div className="text-center py-8">Loading...</div>
-          ) : tree.length === 0 ? (
+          </CardContent>
+        </Card>
+      ) : items.length === 0 ? (
+        <Card>
+          <CardContent>
             <div className="text-center py-8 text-gray-500">
               Tidak ada data item keuangan
             </div>
-          ) : (
-            <div className="border rounded-lg">
-              {tree.map((item) => renderTreeItem(item))}
+          </CardContent>
+        </Card>
+      ) : selectedPeriode !== "all" ? (
+        // Show single periode
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>
+                Item Keuangan - {getPeriodeInfo(selectedPeriode)?.label} ({items.length})
+              </CardTitle>
+              {items.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const kategoriId = items[0]?.kategoriId;
+                    router.push(`/admin/data-master/keuangan/item/edit?periodeId=${selectedPeriode}&kategoriId=${kategoriId}`);
+                  }}
+                >
+                  <Edit className="w-4 h-4 mr-1" />
+                  Edit Periode
+                </Button>
+              )}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <div className="border rounded-lg">
+              {buildTree(items).map((item) => renderTreeItem(item))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        // Show all periode grouped
+        <div className="space-y-6">
+          {Array.from(groupedByPeriode.entries()).map(([periodeId, periodeItems]) => {
+            const periodeInfo = getPeriodeInfo(periodeId);
+            const tree = buildTree(periodeItems);
+            
+            return (
+              <Card key={periodeId}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>
+                        {periodeInfo?.label || `Periode ${periodeId}`} ({periodeItems.length} items)
+                      </CardTitle>
+                      {periodeInfo?.tanggalMulai && periodeInfo?.tanggalAkhir && (
+                        <p className="text-sm text-gray-600 mt-1">
+                          {new Date(periodeInfo.tanggalMulai).toLocaleDateString('id-ID')} - {new Date(periodeInfo.tanggalAkhir).toLocaleDateString('id-ID')}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const kategoriId = periodeItems[0]?.kategoriId;
+                          router.push(`/admin/data-master/keuangan/item/edit?periodeId=${periodeId}&kategoriId=${kategoriId}`);
+                        }}
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Edit Periode
+                      </Button>
+                      <Badge variant="outline">
+                        {periodeInfo?.status || 'Unknown'}
+                      </Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="border rounded-lg">
+                    {tree.map((item) => renderTreeItem(item))}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Modals */}
       <ConfirmDialog
@@ -504,26 +515,6 @@ export default function ItemKeuanganPage() {
         }
       />
 
-      <EditModal
-        isOpen={!!editItem}
-        onClose={() => setEditItem(null)}
-        onSubmit={(formData) =>
-          updateMutation.mutate({ id: editItem.id, data: formData })
-        }
-        title="Edit Item Keuangan"
-        fields={formFields}
-        initialData={editItem}
-        isLoading={updateMutation.isPending}
-      />
-
-      {/* <CreateModal
-        isOpen={showCreate}
-        onClose={() => setShowCreate(false)}
-        onSubmit={(formData) => createMutation.mutate(formData)}
-        title="Tambah Item Keuangan"
-        fields={formFields}
-        isLoading={createMutation.isPending}
-      /> */}
     </div>
   );
 }

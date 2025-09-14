@@ -61,9 +61,7 @@ async function handleGet(req, res) {
         include: {
           _count: {
             select: {
-              anggaranItems: true,
-              transaksiPenerimaan: true,
-              transaksiPengeluaran: true
+              itemKeuangan: true
             }
           }
         },
@@ -204,9 +202,9 @@ async function handlePost(req, res) {
           }));
 
           // Create anggaran items in batch
-          await prisma.anggaranItem.createMany({
-            data: anggaranItemsData
-          });
+          // Note: This would need to be implemented if AnggaranItem model exists
+          // For now, we'll skip auto population
+          console.log("Auto populate anggaran items skipped - model not implemented");
         }
       } catch (populateError) {
         console.warn("Gagal auto populate anggaran items:", populateError);

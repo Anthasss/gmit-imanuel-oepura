@@ -11,8 +11,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url       = env("NEXT_PUBLIC_DATABASE_URL")
-  directUrl = env("NEXT_PUBLIC_DIRECT_URL")
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -615,12 +614,18 @@ model ItemKeuangan {
   level             Int     @default(1)         // Level hierarki (1, 2, 3, 4, dst)
   urutan            Int     @default(0)         // Urutan dalam level yang sama
   
+  // Target/anggaran fields (tambahan untuk perencanaan anggaran)
+  targetFrekuensi   Int?    @map("target_frekuensi")          // Target frekuensi (misal: 12 kali)
+  satuanFrekuensi   String? @map("satuan_frekuensi") @db.VarChar(20) // Satuan (Per Bulan, Per Tahun, dll)
+  nominalSatuan     Decimal? @map("nominal_satuan") @db.Decimal(15,2) // Nominal per satuan
+  totalTarget       Decimal? @map("total_target") @db.Decimal(15,2)   // Total target anggaran (auto calculated)
+  
   // Data actual transaksi (bukan target/anggaran)
   nominalActual     Decimal @default(0) @map("nominal_actual") @db.Decimal(15,2)  // Total actual penerimaan/pengeluaran
   jumlahTransaksi   Int     @default(0) @map("jumlah_transaksi")                  // Jumlah transaksi yang terjadi
   
   keterangan        String? @db.Text
-  
+
   isActive          Boolean @default(true) @map("is_active")
   
   createdAt         DateTime @default(now()) @map("created_at")
@@ -632,7 +637,7 @@ model ItemKeuangan {
   parent            ItemKeuangan?    @relation("HierarkiItem", fields: [parentId], references: [id])
   children          ItemKeuangan[]   @relation("HierarkiItem")
   
-  rekapKeuangan     RekapKeuangan[]
+  // rekapKeuangan     RekapKeuangan[]
 
   @@unique([kategoriId, periodeId, kode], name: "unique_kode_per_kategori_periode")
   @@index([kategoriId], name: "idx_item_kategori")
@@ -659,7 +664,7 @@ model PeriodeAnggaran {
 
   // Relations
   itemKeuangan  ItemKeuangan[]
-  rekapKeuangan RekapKeuangan[]
+  // rekapKeuangan RekapKeuangan[]
 
   @@map("periode_anggaran")
 }
@@ -670,96 +675,6 @@ enum StatusPeriode {
   CLOSED
 }
 
-// Model untuk anggaran per item per periode
-// model AnggaranItem {
-//   id              String @id @default(dbgenerated("concat('ang_', gen_random_uuid())")) @db.VarChar(80)
-//   periodeId       String @map("periode_id") @db.VarChar(80)
-//   itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
-  
-//   targetFrekuensi Int?    @map("target_frekuensi")
-//   satuanFrekuensi String? @map("satuan_frekuensi") @db.VarChar(20)
-//   nominalSatuan   Decimal? @map("nominal_satuan") @db.Decimal(15,2)
-//   totalAnggaran   Decimal  @map("total_anggaran") @db.Decimal(15,2)
-  
-//   keterangan      String? @db.Text
-  
-//   createdAt       DateTime @default(now()) @map("created_at")
-//   updatedAt       DateTime @updatedAt @map("updated_at")
-
-//   // Relations
-//   periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
-//   itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
-
-//   @@unique([periodeId, itemKeuanganId], name: "unique_periode_item")
-//   @@map("anggaran_item")
-// }
-
-// // Model untuk transaksi penerimaan
-// model TransaksiPenerimaan {
-//   id              String @id @default(dbgenerated("concat('tpen_', gen_random_uuid())")) @db.VarChar(80)
-//   periodeId       String @map("periode_id") @db.VarChar(80)
-//   itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
-//   jadwalIbadahId  String? @map("jadwal_ibadah_id") @db.VarChar(80) // Jika dari ibadah
-//   jemaatId        String? @map("jemaat_id") @db.VarChar(80)        // Jika dari jemaat tertentu
-//   keluargaId      String? @map("keluarga_id") @db.VarChar(80)      // Jika dari keluarga
-  
-//   tanggal         DateTime @db.Date
-//   nominal         Decimal @db.Decimal(15,2)
-//   keterangan      String?  @db.Text
-//   nomorReferensi  String?  @map("nomor_referensi") @db.VarChar(50) // Nomor bukti, dll
-  
-//   // Metadata
-//   sumberData      String?  @map("sumber_data") @db.VarChar(50)     // "manual", "import", "ibadah"
-  
-//   createdBy       String?  @map("created_by") @db.VarChar(80)
-//   createdAt       DateTime @default(now()) @map("created_at")
-//   updatedAt       DateTime @updatedAt @map("updated_at")
-
-//   // Relations
-//   periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
-//   itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
-//   jadwalIbadah    JadwalIbadah?   @relation(fields: [jadwalIbadahId], references: [id])
-//   jemaat          Jemaat?         @relation(fields: [jemaatId], references: [id])
-//   keluarga        Keluarga?       @relation(fields: [keluargaId], references: [id])
-
-//   @@index([periodeId], name: "idx_periode_pen")
-//   @@index([itemKeuanganId], name: "idx_item_pen")
-//   @@index([tanggal], name: "idx_tanggal_pen")
-//   @@index([jadwalIbadahId], name: "idx_ibadah_pen")
-//   @@map("transaksi_penerimaan")
-// }
-
-// // Model untuk transaksi pengeluaran
-// model TransaksiPengeluaran {
-//   id              String @id @default(dbgenerated("concat('tkel_', gen_random_uuid())")) @db.VarChar(80)
-//   periodeId       String @map("periode_id") @db.VarChar(80)
-//   itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
-  
-//   tanggal         DateTime @db.Date
-//   nominal         Decimal @db.Decimal(15,2)
-//   keterangan      String?  @db.Text
-//   nomorReferensi  String?  @map("nomor_referensi") @db.VarChar(50)
-//   penerima        String?  @db.VarChar(100)  // Siapa yang menerima
-  
-//   // Approval workflow
-//   status          StatusTransaksi @default(DRAFT)
-//   approvedBy      String?  @map("approved_by") @db.VarChar(80)
-//   approvedAt      DateTime? @map("approved_at")
-  
-//   createdBy       String?  @map("created_by") @db.VarChar(80)
-//   createdAt       DateTime @default(now()) @map("created_at")
-//   updatedAt       DateTime @updatedAt @map("updated_at")
-
-//   // Relations
-//   periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
-//   itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
-
-//   @@index([periodeId], name: "idx_periode_kel")
-//   @@index([itemKeuanganId], name: "idx_item_kel")
-//   @@index([tanggal], name: "idx_tanggal_kel")
-//   @@index([status], name: "idx_status_kel")
-//   @@map("transaksi_pengeluaran")
-// }
 
 enum StatusTransaksi {
   DRAFT
@@ -769,29 +684,29 @@ enum StatusTransaksi {
 }
 
 // Model untuk rekap bulanan/berkala
-model RekapKeuangan {
-  id              String @id @default(dbgenerated("concat('rek_', gen_random_uuid())")) @db.VarChar(80)
-  periodeId       String @map("periode_id") @db.VarChar(80)
-  itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
+// model RekapKeuangan {
+//   id              String @id @default(dbgenerated("concat('rek_', gen_random_uuid())")) @db.VarChar(80)
+//   periodeId       String @map("periode_id") @db.VarChar(80)
+//   itemKeuanganId  String @map("item_keuangan_id") @db.VarChar(80)
   
-  tahun           Int
-  bulan           Int?    // Null jika rekap tahunan
+//   tahun           Int
+//   bulan           Int?    // Null jika rekap tahunan
   
-  targetAnggaran  Decimal? @map("target_anggaran") @db.Decimal(15,2)
-  realisasiNominal Decimal @map("realisasi_nominal") @db.Decimal(15,2)
-  jumlahTransaksi Int    @map("jumlah_transaksi")
+//   targetAnggaran  Decimal? @map("target_anggaran") @db.Decimal(15,2)
+//   realisasiNominal Decimal @map("realisasi_nominal") @db.Decimal(15,2)
+//   jumlahTransaksi Int    @map("jumlah_transaksi")
   
-  persentaseRealisasi Float? @map("persentase_realisasi")
-  selisih         Decimal? @db.Decimal(15,2) // Realisasi - Target
+//   persentaseRealisasi Float? @map("persentase_realisasi")
+//   selisih         Decimal? @db.Decimal(15,2) // Realisasi - Target
   
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+//   createdAt       DateTime @default(now()) @map("created_at")
+//   updatedAt       DateTime @updatedAt @map("updated_at")
 
-  // Relations
-  periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
-  itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
+//   // Relations
+//   periode         PeriodeAnggaran @relation(fields: [periodeId], references: [id])
+//   itemKeuangan    ItemKeuangan    @relation(fields: [itemKeuanganId], references: [id])
 
-  @@unique([periodeId, itemKeuanganId, tahun, bulan], name: "unique_rekap")
-  @@map("rekap_keuangan")
-}
+//   @@unique([periodeId, itemKeuanganId, tahun, bulan], name: "unique_rekap")
+//   @@map("rekap_keuangan")
+// }
 

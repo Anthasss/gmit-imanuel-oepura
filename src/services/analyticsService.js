@@ -1,25 +1,22 @@
-class AnalyticsService {
-  constructor() {
-    this.baseURL = '/api';
-  }
+import axios from "@/lib/axios";
 
-  async getFullAnalytics(period = 'year') {
+class AnalyticsService {
+  async getFullAnalytics(period = "year") {
     try {
-      const response = await fetch(`${this.baseURL}/analytics/comprehensive?period=${period}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const response = await axios.get(
+        `/analytics/comprehensive?period=${period}`
+      );
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message || "Failed to fetch analytics data"
+        );
       }
-      
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.message || 'Failed to fetch analytics data');
-      }
-      
-      return result.data;
+
+      return response.data.data;
     } catch (error) {
-      console.error('Analytics Service Error:', error);
+      console.error("Analytics Service Error:", error);
+
       // Return fallback data structure
       return this.getFallbackData();
     }
@@ -27,64 +24,48 @@ class AnalyticsService {
 
   async getDemographicTrends() {
     try {
-      const response = await fetch(`${this.baseURL}/analytics/trends`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      return result.success ? result.data : {};
+      const response = await axios.get("/analytics/trends");
+
+      return response.data.success ? response.data.data : {};
     } catch (error) {
-      console.error('Demographics Trends Service Error:', error);
+      console.error("Demographics Trends Service Error:", error);
+
       return {};
     }
   }
 
   async getSacramentAnalytics() {
     try {
-      const response = await fetch(`${this.baseURL}/analytics/sacraments`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      return result.success ? result.data : {};
+      const response = await axios.get("/analytics/sacraments");
+
+      return response.data.success ? response.data.data : {};
     } catch (error) {
-      console.error('Sacrament Analytics Service Error:', error);
+      console.error("Sacrament Analytics Service Error:", error);
+
       return {};
     }
   }
 
-  async getGrowthMetrics(period = 'year') {
+  async getGrowthMetrics(period = "year") {
     try {
-      const response = await fetch(`${this.baseURL}/analytics/growth?period=${period}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      return result.success ? result.data : {};
+      const response = await axios.get(`/analytics/growth?period=${period}`);
+
+      return response.data.success ? response.data.data : {};
     } catch (error) {
-      console.error('Growth Metrics Service Error:', error);
+      console.error("Growth Metrics Service Error:", error);
+
       return {};
     }
   }
 
   async getDistributionAnalytics() {
     try {
-      const response = await fetch(`${this.baseURL}/analytics/distribution`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      return result.success ? result.data : {};
+      const response = await axios.get("/analytics/distribution");
+
+      return response.data.success ? response.data.data : {};
     } catch (error) {
-      console.error('Distribution Analytics Service Error:', error);
+      console.error("Distribution Analytics Service Error:", error);
+
       return {};
     }
   }
@@ -151,7 +132,7 @@ class AnalyticsService {
 
   // Helper method to format chart data
   formatChartData(data, labelKey, valueKey) {
-    return data.map(item => ({
+    return data.map((item) => ({
       label: item[labelKey],
       value: item[valueKey],
       percentage: item.percentage || 0,
@@ -161,31 +142,48 @@ class AnalyticsService {
   // Helper method to calculate growth percentage
   calculateGrowthPercentage(current, previous) {
     if (previous === 0) return current > 0 ? 100 : 0;
+
     return ((current - previous) / previous) * 100;
   }
 
   // Helper method to format age group data for charts
   formatAgeGroupData(ageGroups) {
     return [
-      { label: 'Anak (0-12)', value: ageGroups.children?.count || 0, percentage: ageGroups.children?.percentage || 0 },
-      { label: 'Remaja (13-25)', value: ageGroups.youth?.count || 0, percentage: ageGroups.youth?.percentage || 0 },
-      { label: 'Dewasa (26-59)', value: ageGroups.adult?.count || 0, percentage: ageGroups.adult?.percentage || 0 },
-      { label: 'Lansia (60+)', value: ageGroups.elderly?.count || 0, percentage: ageGroups.elderly?.percentage || 0 },
+      {
+        label: "Anak (0-12)",
+        value: ageGroups.children?.count || 0,
+        percentage: ageGroups.children?.percentage || 0,
+      },
+      {
+        label: "Remaja (13-25)",
+        value: ageGroups.youth?.count || 0,
+        percentage: ageGroups.youth?.percentage || 0,
+      },
+      {
+        label: "Dewasa (26-59)",
+        value: ageGroups.adult?.count || 0,
+        percentage: ageGroups.adult?.percentage || 0,
+      },
+      {
+        label: "Lansia (60+)",
+        value: ageGroups.elderly?.count || 0,
+        percentage: ageGroups.elderly?.percentage || 0,
+      },
     ];
   }
 
   // Helper method to format gender distribution
   formatGenderData(demographics) {
     return [
-      { 
-        label: 'Pria', 
-        value: demographics.maleCount || 0, 
-        percentage: demographics.malePercentage || 0 
+      {
+        label: "Pria",
+        value: demographics.maleCount || 0,
+        percentage: demographics.malePercentage || 0,
       },
-      { 
-        label: 'Wanita', 
-        value: demographics.femaleCount || 0, 
-        percentage: demographics.femalePercentage || 0 
+      {
+        label: "Wanita",
+        value: demographics.femaleCount || 0,
+        percentage: demographics.femalePercentage || 0,
       },
     ];
   }
@@ -193,40 +191,56 @@ class AnalyticsService {
   // Helper method to get summary insights
   getSummaryInsights(analytics) {
     const insights = [];
-    
+
     // Gender balance insight
-    const genderDiff = Math.abs(analytics.demographics.malePercentage - analytics.demographics.femalePercentage);
+    const genderDiff = Math.abs(
+      analytics.demographics.malePercentage -
+        analytics.demographics.femalePercentage
+    );
+
     if (genderDiff < 10) {
       insights.push("Distribusi jenis kelamin cukup seimbang");
     } else {
-      const dominant = analytics.demographics.malePercentage > analytics.demographics.femalePercentage ? 'pria' : 'wanita';
-      insights.push(`Jemaat ${dominant} lebih dominan (${genderDiff.toFixed(1)}% selisih)`);
+      const dominant =
+        analytics.demographics.malePercentage >
+        analytics.demographics.femalePercentage
+          ? "pria"
+          : "wanita";
+
+      insights.push(
+        `Jemaat ${dominant} lebih dominan (${genderDiff.toFixed(1)}% selisih)`
+      );
     }
-    
+
     // Age distribution insight
     const youthPercentage = analytics.demographics.youthPercentage || 0;
+
     if (youthPercentage > 25) {
       insights.push("Gereja memiliki populasi remaja yang cukup besar");
     } else if (youthPercentage < 15) {
       insights.push("Perlu fokus pada pelayanan remaja");
     }
-    
+
     // Growth insight
     if (analytics.sacraments.baptisTrend > 0) {
-      insights.push(`Baptis meningkat ${analytics.sacraments.baptisTrend.toFixed(1)}%`);
+      insights.push(
+        `Baptis meningkat ${analytics.sacraments.baptisTrend.toFixed(1)}%`
+      );
     }
-    
+
     // Family size insight
     const avgFamily = analytics.distributions.avgMembersPerFamily || 0;
+
     if (avgFamily > 4) {
       insights.push("Ukuran keluarga rata-rata cukup besar");
     } else if (avgFamily < 3) {
       insights.push("Ukuran keluarga rata-rata relatif kecil");
     }
-    
+
     return insights;
   }
 }
 
 const analyticsService = new AnalyticsService();
+
 export default analyticsService;

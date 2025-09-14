@@ -1,4 +1,6 @@
-import GalleryImage from "./galleryImage"
+import EmptyState from "../common/EmptyState";
+
+import GalleryImage from "./galleryImage";
 
 export default function Images({ galleryItems }) {
   return (
@@ -6,16 +8,16 @@ export default function Images({ galleryItems }) {
       {galleryItems && galleryItems.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {galleryItems.map((item) => (
-            <GalleryImage
-              key={item.id}
-              galleryItem={item}
-            />
+            <GalleryImage key={item.id} galleryItem={item} />
           ))}
         </div>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No gallery items found.</p>
-        </div>
+        <EmptyState
+          description="Belum ada foto atau gambar yang tersedia untuk ditampilkan."
+          size="lg"
+          title="Galeri Kosong"
+          type="gallery"
+        />
       )}
     </div>
   );

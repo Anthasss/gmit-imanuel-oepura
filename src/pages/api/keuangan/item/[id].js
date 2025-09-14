@@ -76,9 +76,7 @@ async function handleGet(req, res, id) {
         },
         _count: {
           select: {
-            children: true,
-            transaksiPenerimaan: true,
-            transaksiPengeluaran: true
+            children: true
           }
         }
       }
@@ -93,6 +91,8 @@ async function handleGet(req, res, id) {
     // Convert BigInt to string for JSON serialization
     const itemWithStrings = {
       ...item,
+      targetFrekuensi: item.targetFrekuensi,
+      satuanFrekuensi: item.satuanFrekuensi,
       nominalSatuan: item.nominalSatuan ? item.nominalSatuan.toString() : null,
       totalTarget: item.totalTarget ? item.totalTarget.toString() : null,
     };
@@ -183,6 +183,8 @@ async function handlePatch(req, res, id) {
     // Convert BigInt to string for JSON serialization
     const itemWithStrings = {
       ...item,
+      targetFrekuensi: item.targetFrekuensi,
+      satuanFrekuensi: item.satuanFrekuensi,
       nominalSatuan: item.nominalSatuan ? item.nominalSatuan.toString() : null,
       totalTarget: item.totalTarget ? item.totalTarget.toString() : null,
     };
@@ -206,9 +208,7 @@ async function handleDelete(req, res, id) {
       include: {
         _count: {
           select: {
-            children: true,
-            transaksiPenerimaan: true,
-            transaksiPengeluaran: true
+            children: true
           }
         }
       }

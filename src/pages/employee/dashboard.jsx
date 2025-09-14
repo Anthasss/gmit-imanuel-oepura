@@ -41,9 +41,9 @@ function EmployeeDashboard() {
           <div className="bg-white overflow-hidden shadow rounded-lg mb-6">
             <div className="px-4 py-5 sm:p-6">
               <div className="flex items-center">
-                <div className="flex-shrink-0">
+                {/* <div className="flex-shrink-0">
                   <Briefcase className="h-12 w-12 text-orange-600" />
-                </div>
+                </div> */}
                 <div className="ml-5">
                   <h3 className="text-lg font-medium text-gray-900">
                     Selamat datang, {user?.username}!
